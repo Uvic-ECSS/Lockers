@@ -4,8 +4,8 @@ import (
 	"crypto/rand"
 	"testing"
 
-	"github.com/zvdv/ECSS-Lockers/internal/crypto"
-	"github.com/zvdv/ECSS-Lockers/internal/router/auth"
+	"github.com/parsa222/ECSS-Lockers/internal/crypto"
+	"github.com/parsa222/ECSS-Lockers/internal/router/auth"
 )
 
 func TestTokenMaker(t *testing.T) {

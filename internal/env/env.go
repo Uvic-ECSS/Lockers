@@ -3,7 +3,7 @@ package env
 import (
 	"os"
 
-	"github.com/zvdv/ECSS-Lockers/internal/logger"
+	"github.com/parsa222/ECSS-Lockers/internal/logger"
 )
 
 func MustEnv(key string) string {

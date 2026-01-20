@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	_ "github.com/tursodatabase/libsql-client-go/libsql"
-	"github.com/zvdv/ECSS-Lockers/internal/logger"
+	"github.com/parsa222/ECSS-Lockers/internal/logger"
 )
 
 var (

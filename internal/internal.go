@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"github.com/zvdv/ECSS-Lockers/internal/env"
+	"github.com/parsa222/ECSS-Lockers/internal/env"
 )
 
 var (

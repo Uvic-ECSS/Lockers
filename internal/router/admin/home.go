@@ -4,10 +4,10 @@ import (
 	"net/http"
 	stdtime "time"
 
-	"github.com/zvdv/ECSS-Lockers/internal/database"
-	"github.com/zvdv/ECSS-Lockers/internal/httputil"
-	"github.com/zvdv/ECSS-Lockers/internal/logger"
-	"github.com/zvdv/ECSS-Lockers/internal/time"
+	"github.com/parsa222/ECSS-Lockers/internal/database"
+	"github.com/parsa222/ECSS-Lockers/internal/httputil"
+	"github.com/parsa222/ECSS-Lockers/internal/logger"
+	"github.com/parsa222/ECSS-Lockers/internal/time"
 )
 
 func Home(w http.ResponseWriter, r *http.Request) {

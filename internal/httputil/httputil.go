@@ -4,8 +4,8 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/zvdv/ECSS-Lockers/internal/crypto"
-	"github.com/zvdv/ECSS-Lockers/internal/logger"
+	"github.com/parsa222/ECSS-Lockers/internal/crypto"
+	"github.com/parsa222/ECSS-Lockers/internal/logger"
 )
 
 type ContextString string

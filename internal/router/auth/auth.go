@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/zvdv/ECSS-Lockers/internal"
-	"github.com/zvdv/ECSS-Lockers/internal/crypto"
-	"github.com/zvdv/ECSS-Lockers/internal/email"
-	"github.com/zvdv/ECSS-Lockers/internal/env"
-	"github.com/zvdv/ECSS-Lockers/internal/httputil"
-	"github.com/zvdv/ECSS-Lockers/internal/logger"
-	"github.com/zvdv/ECSS-Lockers/internal/time"
+	"github.com/parsa222/ECSS-Lockers/internal"
+	"github.com/parsa222/ECSS-Lockers/internal/crypto"
+	"github.com/parsa222/ECSS-Lockers/internal/email"
+	"github.com/parsa222/ECSS-Lockers/internal/env"
+	"github.com/parsa222/ECSS-Lockers/internal/httputil"
+	"github.com/parsa222/ECSS-Lockers/internal/logger"
+	"github.com/parsa222/ECSS-Lockers/internal/time"
 	"gopkg.in/gomail.v2"
 )
 

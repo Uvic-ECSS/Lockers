@@ -5,11 +5,11 @@ import (
 	"fmt"
 
 	"github.com/joho/godotenv"
-	"github.com/zvdv/ECSS-Lockers/internal/crypto"
-	"github.com/zvdv/ECSS-Lockers/internal/database"
-	"github.com/zvdv/ECSS-Lockers/internal/env"
-	"github.com/zvdv/ECSS-Lockers/internal/logger"
-	"github.com/zvdv/ECSS-Lockers/internal/time"
+	"github.com/parsa222/ECSS-Lockers/internal/crypto"
+	"github.com/parsa222/ECSS-Lockers/internal/database"
+	"github.com/parsa222/ECSS-Lockers/internal/env"
+	"github.com/parsa222/ECSS-Lockers/internal/logger"
+	"github.com/parsa222/ECSS-Lockers/internal/time"
 )
 
 type User struct {

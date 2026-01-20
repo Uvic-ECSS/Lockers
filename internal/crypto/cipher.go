@@ -5,8 +5,8 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 
-	"github.com/zvdv/ECSS-Lockers/internal/env"
-	"github.com/zvdv/ECSS-Lockers/internal/logger"
+	"github.com/parsa222/ECSS-Lockers/internal/env"
+	"github.com/parsa222/ECSS-Lockers/internal/logger"
 	"golang.org/x/crypto/chacha20poly1305"
 	"lukechampine.com/blake3"
 )

@@ -6,9 +6,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/zvdv/ECSS-Lockers/internal/crypto"
-	"github.com/zvdv/ECSS-Lockers/internal/httputil"
-	"github.com/zvdv/ECSS-Lockers/internal/logger"
+	"github.com/parsa222/ECSS-Lockers/internal/crypto"
+	"github.com/parsa222/ECSS-Lockers/internal/httputil"
+	"github.com/parsa222/ECSS-Lockers/internal/logger"
 )
 
 var (
