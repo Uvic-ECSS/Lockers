@@ -6,3 +6,5 @@
 /assets/css/index.css 
 app
 .env
+.DS_Store
+**/.DS_Store
