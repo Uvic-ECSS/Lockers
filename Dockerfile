@@ -1,4 +1,4 @@
-FROM golang:1.23.0-alpine3.20 AS gobuild
+FROM golang:1.24.0-alpine3.20 AS gobuild
 WORKDIR /locker
 COPY go.mod go.sum ./
 COPY /internal ./internal
