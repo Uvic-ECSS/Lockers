@@ -7,6 +7,7 @@
     <h1 class="text-primary text-5xl font-semibold">{{.LockerName}}</h1>
     <span class="text-xs opacity-60 italic">Expire on {{.ExpireAt}}</span>
     <br>
+    <p class="text-sm text-gray-600 mt-2 mb-4"><b>To renew your locker, deregister first and register for the same locker again.</b></p>
 <form
   hx-post="/dash/deregister"
   hx-target="#dashboard-content"
@@ -19,7 +20,7 @@
 >
   Deregister Locker
 </button>
-<!-- i'm really bad at UI :( -parsa -->
+<!-- i'm really bad at UI :( -parsa https://flowbite.com/docs/components/buttons/  -->
 
 </form>
 

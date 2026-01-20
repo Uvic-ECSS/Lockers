@@ -16,7 +16,9 @@ func TestTokenMaker(t *testing.T) {
 
 	crypto.CipherKey = key
 
-	email := "halnguyen@uvic.ca"
+	//email := "halnguyen@uvic.ca" thanks u hal for the tester func
+	email := "parsaghiasi@uvic.ca"
+
 	tok, err := auth.MakeTokenFromEmail(email)
 	if err != nil {
 		t.Fatal(err)

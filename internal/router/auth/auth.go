@@ -29,9 +29,16 @@ func AuthApiLogin(w http.ResponseWriter, r *http.Request) {
 		httputil.WriteResponse(w, http.StatusBadRequest, []byte("invalid form data"))
 		return
 	}
+	// for local testing, dont uncomment lol
+	// if r.FormValue("email") == "test" {
 
-	// validate userEmail
-	// append @uvic since the input data is just netlink id
+	// 	email := "test@uvic.ca"
+
+	// 	setSessionCookies(w, email)
+	// 	w.Header().Add("HX-Redirect", "/dash")
+	// 	return
+	// }
+
 	userEmail := r.FormValue("email") + "@uvic.ca"
 	if !email.ValidUVicEmail(userEmail) {
 		data := `
@@ -174,4 +181,44 @@ func AuthApiToken(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &cookie)
 
 	w.Header().Add("HX-Redirect", "/dash")
+}
+
+// Helper function to set session cookies
+func setSessionCookies(w http.ResponseWriter, email string) {
+	// Encrypt email as session cookie value
+	cookieValue, err := crypto.Encrypt(crypto.CipherKey[:], []byte(email), nil)
+	if err != nil {
+		logger.Error.Printf("error encrypting email: %v\n", err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
+	}
+
+	sessionCookie := http.Cookie{
+		Name:     string(httputil.SessionID),
+		Value:    crypto.Base64.EncodeToString(cookieValue),
+		Domain:   internal.Domain,
+		Path:     "/",
+		MaxAge:   sessionCookieMaxAge,
+		Secure:   true,
+		HttpOnly: true,
+	}
+	http.SetCookie(w, &sessionCookie)
+
+	// Sign email with HMAC
+	digest, err := crypto.SignMessage(crypto.SignatureKey[:], []byte(email), nil)
+	if err != nil {
+		logger.Error.Printf("error signing token: %v\n", err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
+	}
+
+	tokenCookie := http.Cookie{
+		Name:     "token",
+		Value:    crypto.Base64.EncodeToString(digest),
+		Path:     "/",
+		Domain:   internal.Domain,
+		Secure:   true,
+		HttpOnly: true,
+	}
+	http.SetCookie(w, &tokenCookie)
 }
