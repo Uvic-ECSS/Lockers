@@ -24,3 +24,5 @@
 - [ ] add the lockers in the ECS building (if needed)
     - add new column to  database (choose bldg)
     - query ( db.Prepare = where locker.id like num and locker.id like building )
+     
+- [ ] use lockers@uvicecss.ca instead of gmail
