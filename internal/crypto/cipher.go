@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 
 	"github.com/parsa222/ECSS-Lockers/internal/env"
 	"github.com/parsa222/ECSS-Lockers/internal/logger"
@@ -75,6 +76,9 @@ func Decrypt(key, payload, aad []byte) ([]byte, error) {
 	}
 
 	nonceSize := aead.NonceSize()
+	if len(payload) < nonceSize {
+		return nil, errors.New("crypto: ciphertext too short")
+	}
 	nonce := payload[:nonceSize]
 	ciphertext := payload[nonceSize:]
 

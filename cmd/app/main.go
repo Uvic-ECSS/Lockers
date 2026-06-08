@@ -73,9 +73,9 @@ func main() {
 
 	app.Route("/admin", func(r chi.Router) {
 		r.Use(admin.AdminTokenChecker)
-		r.Handle("/", http.HandlerFunc(admin.Home))
-		r.Handle("/registration", http.HandlerFunc(admin.Registrations))
-		r.Handle("/registration/export", http.HandlerFunc(admin.Export))
+		r.Get("/", admin.Home)
+		r.Delete("/registration", admin.Registrations)
+		r.Get("/registration/export", admin.Export)
 	})
 
 	logger.Info.Printf("Listening at http://localhost%s\n", addr)

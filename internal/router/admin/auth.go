@@ -1,17 +1,31 @@
 package admin
 
 import (
+	"crypto/subtle"
+	"encoding/binary"
+	"net"
 	"net/http"
+	"sync"
 
 	"github.com/parsa222/ECSS-Lockers/internal/crypto"
 	"github.com/parsa222/ECSS-Lockers/internal/env"
 	"github.com/parsa222/ECSS-Lockers/internal/httputil"
 	"github.com/parsa222/ECSS-Lockers/internal/logger"
+	"github.com/parsa222/ECSS-Lockers/internal/time"
+)
+
+const (
+	adminSessionMaxAge int    = 8 * 60 * 60 // 8 h
+	loginWindowSecs    uint64 = 15 * 60    
+	loginMaxFails      int    = 5           // IP limit
 )
 
 var (
 	adminUsername string
 	adminPassword string
+
+	failsMu sync.Mutex
+	fails   = map[string][]uint64{} // unix time 
 )
 
 func Initialize() {
@@ -30,6 +44,16 @@ func Auth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ip := clientIP(r)
+
+	if tooManyFailures(ip) {
+		httputil.WriteResponse(w, http.StatusOK, []byte(`
+    <button type="submit" class="btn btn-primary btn-block">Login</button>
+    <span id="error-message" class="text-error">Too many attempts : ( </span>
+            `))
+		return
+	}
+
 	if err := r.ParseForm(); err != nil {
 		logger.Error.Println(err)
 		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
@@ -39,7 +63,10 @@ func Auth(w http.ResponseWriter, r *http.Request) {
 	username := r.PostFormValue("username")
 	password := r.PostFormValue("password")
 
-	if username != adminUsername || password != adminPassword {
+	userOK := subtle.ConstantTimeCompare([]byte(username), []byte(adminUsername))
+	passOK := subtle.ConstantTimeCompare([]byte(password), []byte(adminPassword))
+	if userOK&passOK != 1 {
+		recordFailure(ip)
 		httputil.WriteResponse(w, http.StatusOK, []byte(`
     <button type="submit" class="btn btn-primary btn-block">Login</button>
     <span id="error-message" class="text-error">Invalid credentials.</span>
@@ -47,7 +74,8 @@ func Auth(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// admin authenticated!
+	clearFailures(ip)
+
 	token, err := makeToken()
 	if err != nil {
 		logger.Error.Println(err)
@@ -58,9 +86,11 @@ func Auth(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "admin_token",
 		Value:    token,
+		Path:     "/",
+		MaxAge:   adminSessionMaxAge,
 		Secure:   true,
 		HttpOnly: true,
-		Path:     "/",
+		SameSite: http.SameSiteLaxMode,
 	})
 
 	w.Header().Add("HX-Redirect", "/admin")
@@ -68,38 +98,13 @@ func Auth(w http.ResponseWriter, r *http.Request) {
 
 func AdminTokenChecker(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var (
-			tokenOK bool
-			err     error
-			cookie  *http.Cookie
-		)
-
-		cookie, err = r.Cookie("admin_token")
-		if err != nil {
-			goto endfunc
-		}
-
-		if err = cookie.Valid(); err != nil {
-			goto endfunc
-		}
-
-		tokenOK, err = parseToken(cookie.Value)
-		if err != nil {
-			goto endfunc
-		}
-
-	endfunc:
-		if err != nil || !tokenOK {
-			if err != nil {
-				logger.Error.Println(err)
-			}
-
+		cookie, err := r.Cookie("admin_token")
+		if err != nil || !validToken(cookie.Value) {
 			httputil.WriteTemplatePage(w,
 				struct{ IsAdmin bool }{IsAdmin: true},
 				"templates/base.html",
 				"templates/auth/session_expired.html",
 				"templates/nav.html")
-
 			return
 		}
 
@@ -107,44 +112,72 @@ func AdminTokenChecker(next http.Handler) http.Handler {
 	})
 }
 
+// server side token expiry date
 func makeToken() (string, error) {
-	ciphertext, err := crypto.Encrypt(
-		crypto.CipherKey[:],
-		[]byte(adminPassword),
-		[]byte(adminUsername))
+	buf := make([]byte, 8)
+	binary.BigEndian.PutUint64(buf, uint64(time.Now().Unix()))
 
+	ciphertext, err := crypto.Encrypt(crypto.CipherKey[:], buf, []byte(adminUsername))
 	if err != nil {
 		return "", err
 	}
 
-	token, err := crypto.SignMessage(
-		crypto.SignatureKey[:],
-		[]byte(adminPassword), ciphertext)
-
-	if err != nil {
-		return "", err
-	}
-
-	return crypto.Base64.EncodeToString(token), nil
+	return crypto.Base64.EncodeToString(ciphertext), nil
 }
 
-func parseToken(token string) (bool, error) {
-	tokenBytes, err := crypto.Base64.DecodeString(token)
+func validToken(token string) bool {
+	raw, err := crypto.Base64.DecodeString(token)
 	if err != nil {
-		return false, nil
+		return false
 	}
 
-	p := len(tokenBytes) - crypto.SignatureSize
-	ciphertext, digest := tokenBytes[:p], tokenBytes[p:]
-
-	pt, err := crypto.Decrypt(
-		crypto.CipherKey[:],
-		ciphertext,
-		[]byte(adminUsername))
-
-	if err != nil {
-		return false, err
+	pt, err := crypto.Decrypt(crypto.CipherKey[:], raw, []byte(adminUsername))
+	if err != nil || len(pt) < 8 {
+		return false
 	}
 
-	return crypto.VerifySignature(crypto.SignatureKey[:], pt, digest)
+	issued := binary.BigEndian.Uint64(pt[:8])
+	now := uint64(time.Now().Unix())
+	return now >= issued && now-issued <= uint64(adminSessionMaxAge)
+}
+
+func clientIP(r *http.Request) string {
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return r.RemoteAddr
+	}
+	return host
+}
+
+func tooManyFailures(ip string) bool {
+	failsMu.Lock()
+	defer failsMu.Unlock()
+
+	now := uint64(time.Now().Unix())
+	var kept []uint64
+	for _, t := range fails[ip] {
+		if now-t < loginWindowSecs {
+			kept = append(kept, t)
+		}
+	}
+
+	if len(kept) == 0 {
+		delete(fails, ip)
+	} else {
+		fails[ip] = kept
+	}
+
+	return len(kept) >= loginMaxFails
+}
+
+func recordFailure(ip string) {
+	failsMu.Lock()
+	defer failsMu.Unlock()
+	fails[ip] = append(fails[ip], uint64(time.Now().Unix()))
+}
+
+func clearFailures(ip string) {
+	failsMu.Lock()
+	defer failsMu.Unlock()
+	delete(fails, ip)
 }
