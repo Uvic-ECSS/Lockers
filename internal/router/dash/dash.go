@@ -296,6 +296,10 @@ func DashRenew(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := renewRegistration(userEmail); err != nil {
+		if errors.Is(err, errNotExpired) {
+			httputil.WriteResponse(w, http.StatusConflict, nil)
+			return
+		}
 		logger.Error.Printf("error renewing locker: %v\n", err)
 		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
 		return
@@ -311,9 +315,25 @@ func DashRenew(w http.ResponseWriter, r *http.Request) {
 	httputil.WriteTemplateComponent(w, data, "templates/dash/locker_status.html")
 }
 
+var errNotExpired = errors.New("locker is not expired yet ;)")
+
 func renewRegistration(userEmail string) error {
 	db, lock := database.Lock()
 	defer lock.Unlock()
+
+	sel, err := db.Prepare(`SELECT expiry FROM registration WHERE user = :email;`)
+	if err != nil {
+		return err
+	}
+	var expiry stdtime.Time
+	err = sel.QueryRow(sql.Named("email", userEmail)).Scan(&expiry)
+	sel.Close()
+	if err != nil {
+		return err
+	}
+	if !expiry.Before(time.Now()) {
+		return errNotExpired
+	}
 
 	stmt, err := db.Prepare(`
         UPDATE registration
