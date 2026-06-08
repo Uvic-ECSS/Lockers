@@ -1,40 +1,24 @@
 {{if .LockerOK}}
-<section
-  hx-put="/dash/api/locker/register"
-  class="max-h-[60vh] overflow-y-scroll w-full grid grid-cols-2 place-items-center gap-5 p-5"
->
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[45vh] overflow-y-auto p-1 fade-rise">
   {{range $locker := .Lockers}}
-
-  <div class="card shadow border p-5 w-full h-full">
-    <div class="flex flex-col gap-3 justify-center items-center">
-      <p>{{$locker.LockerID}}</p>
+  <div class="card border bg-base-100 {{if $locker.IsAvailable}}border-base-300{{else}}border-base-200 opacity-60{{end}}">
+    <div class="card-body items-center gap-2 p-4">
+      <p class="font-semibold">{{$locker.LockerID}}</p>
 
       {{if $locker.IsAvailable}}
-
       <a
         href="/dash/locker/register?locker={{$locker.LockerID}}"
-        class="btn btn-sm btn-primary"
-        name="locker"
-        type="submit"
+        class="btn btn-primary btn-sm btn-block"
       >
         Register
       </a>
-
       {{else}}
-
-      <span class="italic text-sm opacity-60 btn btn-sm btn-ghost cursor-auto"
-        >Unavailable</span
-      >
-
+      <span class="text-xs italic opacity-70">Taken</span>
       {{end}}
     </div>
   </div>
-
   {{end}}
-</section>
-
+</div>
 {{else}}
-
-<p class="text-error text-center">Locker not found.</p>
-
+<p class="text-center py-2 text-sm opacity-70">No locker matches that number.</p>
 {{end}}

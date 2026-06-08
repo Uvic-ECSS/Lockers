@@ -1,17 +1,19 @@
+{{define "nav"}}{{end}}
+
 {{define "content"}}
 <main
   hx-get="/auth/api/token?token={{ .Token }}"
   hx-trigger="load"
   hx-replace-url="true"
-  class="flex flex-col justify-center items-center max-w-screen-md mx-auto h-full gap-5"
+  class="flex-1 flex flex-col justify-center items-center max-w-md mx-auto px-4 gap-5"
 >
   <img
     class="w-56"
-    src="/assets/imgs/ECSS_orange_on_white.png"
+    src="/assets/imgs/ECSS_orange_trans.png"
     alt="UVic ECSS Logo"
   />
 
-  <h1 class="text-3xl font-bold">Locker Registration</h1>
+  <h1 class="text-3xl font-bold">Locker registration</h1>
 
   <div class="flex flex-col justify-center items-center gap-3">
     <span class="loading loading-spinner text-primary loading-lg"></span>

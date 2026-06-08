@@ -20,6 +20,13 @@ type lockerState struct {
 	LockerID    string
 }
 
+type dashboardData struct {
+	HasLocker  bool
+	LockerName string
+	ExpireAt   string
+	IsExpired  bool
+}
+
 func Dash(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		httputil.WriteResponse(w, http.StatusMethodNotAllowed, nil)
@@ -33,53 +40,48 @@ func Dash(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := struct {
-		HasLocker  bool
-		LockerName string
-		ExpireAt   string
-	}{
-		HasLocker:  false,
-		LockerName: "",
-		ExpireAt:   "",
+	data, err := userDashboardData(userEmail)
+	if err != nil {
+		logger.Error.Printf("error querying for registration: %v\n", err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
 	}
+
+	httputil.WriteTemplatePage(w, data,
+		"templates/nav.html",
+		"templates/dash/index.html",
+		"templates/dash/locker_status.html")
+}
+
+func userDashboardData(userEmail string) (dashboardData, error) {
+	var data dashboardData
 
 	db, lock := database.Lock()
 	defer lock.Unlock()
 
 	stmt, err := db.Prepare(`
         SELECT locker, expiry
-        FROM registration 
-        WHERE user = :email 
+        FROM registration
+        WHERE user = :email
         LIMIT 1;`)
-
 	if err != nil {
-		logger.Error.Fatal(err)
+		return data, err
 	}
+	defer stmt.Close()
 
 	var expiry stdtime.Time
-
 	err = stmt.QueryRow(sql.Named("email", userEmail)).Scan(&data.LockerName, &expiry)
 	if err != nil {
-		if !errors.Is(err, sql.ErrNoRows) {
-			logger.Error.Printf("error querying for registration: %v\n", err)
-			httputil.WriteResponse(w, http.StatusInternalServerError, nil)
-
-			return
+		if errors.Is(err, sql.ErrNoRows) {
+			return data, nil
 		}
-
-	} else {
-		data.HasLocker = true
-		data.ExpireAt = expiry.Format("Jan 2, 2006 at 3:04pm")
-		httputil.WriteTemplatePage(w, data,
-			"templates/dash/index.html",
-			"templates/nav.html")
-
-		return
+		return data, err
 	}
 
-	httputil.WriteTemplatePage(w, data,
-		"templates/nav.html",
-		"templates/dash/index.html")
+	data.HasLocker = true
+	data.ExpireAt = expiry.Format(time.TimeFormatLayout)
+	data.IsExpired = expiry.Before(time.Now())
+	return data, nil
 }
 
 func ApiLocker(w http.ResponseWriter, r *http.Request) {
@@ -278,4 +280,52 @@ func DashDeregister(w http.ResponseWriter, r *http.Request) {
 
 	httputil.WriteTemplateComponent(w, nil, "templates/dash/locker_register_ok.html")
 
+}
+
+func DashRenew(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		httputil.WriteResponse(w, http.StatusMethodNotAllowed, nil)
+		return
+	}
+
+	userEmail, err := httputil.ExtractUserEmail(r)
+	if err != nil {
+		logger.Error.Printf("error extracting user email: %v\n", err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
+	}
+
+	if err := renewRegistration(userEmail); err != nil {
+		logger.Error.Printf("error renewing locker: %v\n", err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
+	}
+
+	data, err := userDashboardData(userEmail)
+	if err != nil {
+		logger.Error.Printf("error querying for registration: %v\n", err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
+	}
+
+	httputil.WriteTemplateComponent(w, data, "templates/dash/locker_status.html")
+}
+
+func renewRegistration(userEmail string) error {
+	db, lock := database.Lock()
+	defer lock.Unlock()
+
+	stmt, err := db.Prepare(`
+        UPDATE registration
+        SET expiry = :expiry, expiryEmailSent = FALSE
+        WHERE user = :email;`)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(
+		sql.Named("expiry", time.NextExpiryDate(time.Now())),
+		sql.Named("email", userEmail))
+	return err
 }

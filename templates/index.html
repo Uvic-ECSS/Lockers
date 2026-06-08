@@ -1,218 +1,111 @@
 {{define "nav"}}
-<!-- No nav bar on this page -->
-{{end}} {{define "content"}}
+<div class="flex justify-end px-4 pt-3">{{template "themetoggle"}}</div>
+{{end}}
 
-<!--
+{{define "content"}}
+<main class="flex-1 grid place-items-center px-4 py-10">
+  <div class="w-full max-w-sm flex flex-col items-center gap-5">
+    <img class="w-28" src="/assets/imgs/ECSS_orange_trans.png" alt="UVic ECSS Logo" />
 
-https://tailwindcss.com/plus/ui-blocks/application-ui/feedback/alerts
- chekc l8r
-probalby a pop up?
-
--->
-
-
-<!-- term n condition -->
- <!-- https://v4.daisyui.com/components/modal/ -->
-  
- <div id="rules-modal"
-     class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm"
-     role="dialog" 
-     aria-modal="true">
-  <div class="bg-base-100 rounded-2xl max-w-lg w-full mx-4 p-6 shadow-xl space-y-4">
-    <h2 class="text-lg font-semibold">you are welcome to use a personal locker in ELW, free of charge, provided the following conditions are met: </h2>
-
-
-<div class="prose max-h-60 overflow-y-auto border rounded p-3 text-sm">
-
-
- 
-  <ul class="list-disc pl-5 space-y-1">
-    <li>Provide your own lock and register your locker after locking it.</li>
-    <li>Do not store dangerous or illegal items.</li>
-    <li>Do not allow perishable food stored in your locker to rot.</li>
-    <li>Renew or empty your locker at the end of each semester, unrenewed lockers will be cleared.</li>
-    <li>if you do not keep a lock on your registered locker, we will assume that you have abandoned it and reserve the right to issue it to another student without warning.</li>
-  </ul>
-
-  <p class="mt-3">
-    If you are having <strong>issues</strong> or
-    representing a <strong>club</strong>, contact 
-    <b><a href="mailto:dirit@uvicecss.ca" class="link link-info">dirit@uvicecss.ca</a>.</b>
-    include <b>your name</b>, <b>UVic email</b>, and desired <b>locker number</b> (and <b>club name</b> if applicable).
-  </p>
-
-  <p class="mt-3 text-xs italic text-gray-600">
-    <strong>Disclaimer:</strong> the lockers are located in
-     buildings which students have 24-hour keycard access to, 
-     so use caution regarding storage of valuables. 
-     The ECSS takes no responsibility for the security of items stored in student lockers.
-  </p>
-
-  <p class="mt-3 text-xs text-gray-500">
-    For complete policies, see 
-    <a href="https://drive.google.com/file/d/1mhYXT1QPvHh47Nb3wt4buHNuA-QqPH0n/view" 
-       target="_blank" 
-       class="link link-secondary underline">
-       Policy Manual Section 6.3
-    </a>.
-  </p>
-</div>
-
-
-
-
-
-        
-
-    <form
-      hx-post="/accept-rules"
-      hx-target="#rules-feedback"
-      hx-swap="outerHTML"
-      onsubmit="return document.getElementById('agree').checked;"
-      >
-
-<!-- <label class="swap swap-flip text-9xl"> -->
-  <!-- this hidden checkbox controls the state -->
-  
-
-
-
-
-      <label class="flex justify-start">
-         <input id="agree" type="checkbox" class="checkbox checkbox-md checkbox-primary" onchange="toggleContinueButton()"/>  <p>&nbsp; &nbsp;</p>
-        <span class="text-sm text-fg-brand hover:underline" style="color: red"> <b>I have read and agree to these terms and conditions.</b></span>
-      </label>
-
-      <div class="mt-4 flex gap-2">
-        <div id="tooltip-wrapper">
-          <button id="continue-btn" class="btn btn-outline btn-primary" disabled>Continue</button>
+    <div class="card w-full bg-base-100 shadow-xl border border-base-300">
+      <div class="card-body items-center text-center gap-5">
+        <div class="flex flex-col items-center gap-1">
+          <h1 class="text-2xl font-bold">Locker registration</h1>
+          {{if .Debug}}
+          <p class="text-error text-sm font-semibold">DEBUG MODE - local testing.</p>
+          {{end}}
         </div>
-        <button type="button" class="btn btn-outline btn-error" onclick="hideRules()">Cancel</button>
+
+        <form
+          hx-post="/auth/api/login"
+          hx-trigger="submit"
+          hx-swap="innerHTML"
+          hx-target="#output"
+          hx-disabled-elt="find button[type='submit'], find input[type='text']"
+          class="flex flex-col gap-4 items-center w-full"
+        >
+          <div id="email-input" class="hidden w-full">
+            <label class="input flex items-center gap-2 w-full">
+              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-4 w-4 opacity-70">
+                <path d="M2.5 3A1.5 1.5 0 0 0 1 4.5v.793c.026.009.051.02.076.032L7.674 8.51c.206.1.446.1.652 0l6.598-3.185A.755.755 0 0 1 15 5.293V4.5A1.5 1.5 0 0 0 13.5 3h-11Z" />
+                <path d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z" />
+              </svg>
+              <input name="email" type="text" class="grow" placeholder="NetLinkID" aria-label="NetLinkID" />
+              <span class="opacity-70">@uvic.ca</span>
+            </label>
+          </div>
+
+          <div id="output" class="w-full flex flex-col gap-3 items-center">
+            <button type="button" class="btn btn-primary btn-block" onclick="openRules()">
+              Login
+            </button>
+            <p class="text-xs opacity-60">Please read the terms first.</p>
+          </div>
+        </form>
       </div>
-    </form>
+    </div>
   </div>
-</div>
+</main>
+
+<dialog id="rules-modal" class="modal">
+  <div class="modal-box max-w-lg">
+    <h2 class="text-lg font-semibold">
+      You're welcome to use a personal locker in ELW, free of charge, provided:
+    </h2>
+
+    <div class="max-h-60 overflow-y-auto rounded-sm border border-base-300 p-3 my-3 text-sm text-left">
+      <ul class="list-disc pl-5 space-y-1">
+        <li>Provide your own lock and register your locker after locking it.</li>
+        <li>Do not store dangerous or illegal items.</li>
+        <li>Do not allow perishable food stored in your locker to rot.</li>
+        <li>Renew or empty your locker at the end of each semester; unrenewed lockers will be cleared.</li>
+        <li>If you don't keep a lock on your registered locker, we'll assume it's abandoned and may reissue it to another student without warning.</li>
+      </ul>
+      <p class="mt-3">
+        Issues, or representing a <strong>club</strong>? Contact
+        <a href="mailto:dirit@uvicecss.ca" class="link link-info">dirit@uvicecss.ca</a>
+        with your name, UVic email, and desired locker number (and club name if applicable).
+      </p>
+      <p class="mt-2 text-xs opacity-70">
+        Full policies:
+        <a href="https://drive.google.com/file/d/1mhYXT1QPvHh47Nb3wt4buHNuA-QqPH0n/view" target="_blank" class="link link-secondary">Policy Manual Section 6.3</a>.
+      </p>
+      <p class="mt-3 text-xs italic opacity-70">
+        <strong>Disclaimer:</strong> the lockers are located in buildings which
+        students have 24-hour keycard access to, so use caution regarding storage
+        of valuables. The ECSS takes no responsibility for the security of items
+        stored in student lockers.
+      </p>
+    </div>
+
+    <label class="flex items-center gap-2 cursor-pointer">
+      <input id="agree" type="checkbox" class="checkbox checkbox-primary checkbox-sm"
+        onchange="document.getElementById('accept-btn').disabled = !this.checked" />
+      <span class="text-sm font-semibold text-error">I have read and agree to these terms and conditions.</span>
+    </label>
+
+    <div class="modal-action">
+      <button id="accept-btn" type="button" class="btn btn-primary" disabled onclick="acceptRules()">
+        Continue
+      </button>
+      <form method="dialog"><button class="btn btn-ghost">Cancel</button></form>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
 
 <script>
-function showRules() {
-  const m = document.getElementById('rules-modal');
-  m.classList.remove('hidden');
-  m.classList.add('flex');
-  // Reset checkbox when opening
-  document.getElementById('agree').checked = false;
-  toggleContinueButton();
-}
-
-function hideRules() {
-  const m = document.getElementById('rules-modal');
-  m.classList.add('hidden');
-  m.classList.remove('flex');
-}
-
-function toggleContinueButton() {
-  const checkbox = document.getElementById('agree');
-  const btn = document.getElementById('continue-btn');
-  const tooltip = document.getElementById('tooltip-wrapper');
-  btn.disabled = !checkbox.checked;
-  
-  if (btn.disabled) {
-    tooltip.classList.add('tooltip');
-    tooltip.setAttribute('data-tip', 'did you read them?');
-  } else {
-    tooltip.classList.remove('tooltip');
-    tooltip.removeAttribute('data-tip');
+  function openRules() {
+    document.getElementById("agree").checked = false;
+    document.getElementById("accept-btn").disabled = true;
+    document.getElementById("rules-modal").showModal();
   }
-}
-
-function closeModalAndShowForm() {
-  hideRules();
-  // Show the email input and submit button
-  document.getElementById('email-input').style.display = 'block';
-  const output = document.getElementById('output');
-  output.innerHTML = '<button type="submit" class="btn btn-primary btn-block">Login</button>';
-}
-
-// Show modal on page load
-document.addEventListener('DOMContentLoaded', function() {
-  showRules();
-  
-  // Make the continue button actually submit and close
-  const continueBtn = document.getElementById('continue-btn');
-  continueBtn.addEventListener('click', function(e) {
-    e.preventDefault();
-    closeModalAndShowForm();
-  });
-});
-</script> 
-
-
-
-
-
-
-
-<main
-  class="flex flex-col justify-center items-center max-w-screen-md mx-auto h-[100vh] gap-5"
->
-  <img
-    class="w-56"
-    src="/assets/imgs/ECSS_orange_on_white.png"
-    alt="UVic ECSS Logo"
-  />
-
-  <div class="flex flex-col items-center gap-1">
-    <h1 class="text-3xl font-bold">Locker registration</h1>
-    {{if .Debug}}
-    <p class="text-error text-sm font-semibold">DEBUG MODE - local testing.</p>
-    {{end}}
-  </div>
-
-  <form
-    hx-post="/auth/api/login"
-    hx-trigger="submit"
-    hx-swap="innerHTML"
-    hx-target="#output"
-    hx-disabled-elt="find button[type='submit'], find input[type='text']"
-    class="flex flex-col gap-4 justify-center items-center"
-  >
-    <div id="email-input" style="display: none;">
-      <label class="input input-bordered flex items-center gap-2">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 16 16"
-          fill="currentColor"
-          class="h-4 w-4 opacity-70"
-        >
-          <path
-            d="M2.5 3A1.5 1.5 0 0 0 1 4.5v.793c.026.009.051.02.076.032L7.674 8.51c.206.1.446.1.652 0l6.598-3.185A.755.755 0 0 1 15 5.293V4.5A1.5 1.5 0 0 0 13.5 3h-11Z"
-          />
-          <path
-            d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z"
-          />
-        </svg>
-
-        <span>
-          <input
-            name="email"
-            type="text"
-            class="grow"
-            placeholder="netlinkid"
-          />@uvic.ca
-        </span>
-      </label>
-    </div>
-
-    <div
-      id="output"
-      class="w-full flex flex-col gap-3 justify-center items-center"
-    >
-      <button id="login-trigger" type="button" class="btn btn-primary btn-block" onclick="showRules()">Login</button>
-      
-      <div class="skeleton h-600 w-320">
-        <p class="text-xs text-gray-500">Please read the conditions first</p>
-      </div>
-    </div>
-  </form>
-  
-</main>
+  function acceptRules() {
+    document.getElementById("rules-modal").close();
+    document.getElementById("email-input").classList.remove("hidden");
+    document.getElementById("output").innerHTML =
+      '<button type="submit" class="btn btn-primary btn-block">Send login link</button>';
+  }
+  document.addEventListener("DOMContentLoaded", openRules);
+</script>
 {{end}}

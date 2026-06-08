@@ -8,39 +8,40 @@
   });
 </script>
 
-<div class="overflow-x-auto h-max max-h-[60vh] overflow-y-scroll">
-  <table class="table table-zebra">
+<div class="overflow-x-auto rounded-box border border-base-300 max-h-[65vh] overflow-y-auto">
+  <table class="table table-zebra table-pin-rows">
     <thead>
       <tr>
-        <th></th>
+        <th><span class="sr-only">Row</span></th>
         <th>Locker</th>
         <th>Name</th>
         <th>Email</th>
         <th>Expires on</th>
-        <th></th>
+        <th><span class="sr-only">Actions</span></th>
       </tr>
     </thead>
 
-    <tbody class="h-2 overflow-y-scroll">
+    <tbody>
       {{range $reg := .Registrations}}
       <tr>
-        <form hx-delete="/admin/registration">
-          <th class="text-primary">{{$reg.RowIndex}}</th>
-          <td>{{$reg.Locker}}</td>
-          <td>{{$reg.Name}}</td>
-          <td>{{$reg.Email}}</td>
-          <td>{{$reg.Expiry}}</td>
-          <td>
-            <input type="hidden" name="locker" value="{{$reg.Locker}}" />
-            <button class="btn btn-outline btn-error btn-sm" type="submit">
-              remove
-            </button>
-          </td>
-        </form>
+        <th class="text-primary">{{$reg.RowIndex}}</th>
+        <td class="font-medium">{{$reg.Locker}}</td>
+        <td>{{$reg.Name}}</td>
+        <td class="opacity-80">{{$reg.Email}}</td>
+        <td class="whitespace-nowrap">{{$reg.Expiry}}</td>
+        <td>
+          <button
+            class="btn btn-outline btn-error btn-xs"
+            type="button"
+            hx-delete="/admin/registration?locker={{$reg.Locker | urlquery}}"
+            hx-confirm="Remove {{$reg.Name}}'s registration for {{$reg.Locker}}?"
+          >
+            remove
+          </button>
+        </td>
       </tr>
       {{end}}
     </tbody>
   </table>
 </div>
-
 {{end}}

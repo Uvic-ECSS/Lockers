@@ -104,8 +104,7 @@ func Auth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httputil.WriteTemplatePage(w, data,
-		"templates/auth/validate.html",
-		"templates/nav.html")
+		"templates/auth/validate.html")
 }
 
 func AuthApiToken(w http.ResponseWriter, r *http.Request) {

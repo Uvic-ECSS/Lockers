@@ -8,7 +8,7 @@ RUN go build -o app ./cmd/app/main.go
 
 FROM node:22-alpine3.20 AS nodebuild
 WORKDIR /locker
-COPY package.json package-lock.json index.css tailwind.config.js ./
+COPY package.json package-lock.json index.css ./
 COPY /internal/router ./internal/router
 COPY /templates ./templates
 RUN npm install

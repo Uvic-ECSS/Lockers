@@ -1,14 +1,17 @@
 {{define "content"}}
-<h1 class="mt-10 mb-3 text-2xl text-center font-semibold">Registrations {{.Term}}</h1>
+<main class="flex-1 w-full max-w-5xl mx-auto px-4 py-8 flex flex-col gap-6">
+  <h1 class="text-2xl text-center font-semibold">Registrations {{.Term}}</h1>
 
-{{if .HasData}} {{template "lockertable" .}}
+  {{if .HasData}}
+  {{template "lockertable" .}}
 
-<div class="flex justify-center items-center mt-10">
-  <a href="/admin/registration/export" class="btn btn-primary" download
-    >Export data</a
-  >
-</div>
-{{else}}
-
-<div>no registrations for this term</div>
-{{end}} {{end}}
+  <div class="flex justify-center">
+    <a href="/admin/registration/export" class="btn btn-primary" download>
+      Export data (CSV)
+    </a>
+  </div>
+  {{else}}
+  <div class="text-center opacity-70 py-10">No registrations for this term.</div>
+  {{end}}
+</main>
+{{end}}

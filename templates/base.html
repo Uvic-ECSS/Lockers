@@ -1,35 +1,91 @@
 {{define "base"}}
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-        <link rel="stylesheet" type="text/css" href="/assets/css/index.css" />
-        <link rel="icon" type="image/x-icon" href="/assets/favicon.png">
-        <script src="/assets/js/htmx.min.js" defer></script>
-        <title>ECSS' Locker Registration</title>
-    </head>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>ECSS' Locker Registration</title>
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("theme");
+          if (t !== "light" && t !== "dark") {
+            t = window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+          }
+          document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+      })();
+      function toggleTheme() {
+        var c = document.documentElement.getAttribute("data-theme");
+        var n = c === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", n);
+        try {
+          localStorage.setItem("theme", n);
+        } catch (e) {}
+      }
+      document.addEventListener("htmx:confirm", function (e) {
+        if (!e.detail.question) return;
+        e.preventDefault();
+        var m = document.getElementById("confirm-modal");
+        document.getElementById("confirm-text").textContent = e.detail.question;
+        document.getElementById("confirm-yes").onclick = function () {
+          m.close();
+          e.detail.issueRequest(true);
+        };
+        m.showModal();
+      });
+    </script>
+    <link rel="stylesheet" type="text/css" href="/assets/css/index.css" />
+    <link rel="icon" type="image/x-icon" href="/assets/favicon.png" />
+    <script src="/assets/js/htmx.min.js" defer></script>
+  </head>
 
-    <body id="container" class="h-[100vh] overflow-y-hidden flex flex-col justify-center items-center">
-        {{template "nav" .}}
+  <body class="min-h-screen flex flex-col bg-base-100 text-base-content">
+    {{template "nav" .}}
 
-        <div class="h-full grow">
-            {{template "content" .}}
+    <div class="flex-1 flex flex-col w-full">{{template "content" .}}</div>
+
+    <footer class="mt-auto flex flex-col items-center gap-1 w-full p-5 text-center">
+      <span class="text-xs md:text-sm">
+        Having issues? Contact
+        <a class="link link-info" target="_blank" href="mailto:dirit@uvicecss.ca">dirit@uvicecss.ca</a>.
+      </span>
+      <p class="text-xs md:text-sm italic text-base-content/70 max-w-3xl">
+        <strong>DISCLAIMER:</strong>
+        the lockers are located in buildings which students have 24-hour keycard
+        access to, so use caution regarding storage of valuables. The ECSS takes
+        no responsibility for the security of items stored in student lockers.
+      </p>
+    </footer>
+
+    <dialog id="confirm-modal" class="modal" aria-labelledby="confirm-text">
+      <div class="modal-box">
+        <h3 id="confirm-text" class="text-base font-semibold"></h3>
+        <div class="modal-action">
+          <button id="confirm-yes" type="button" class="btn btn-error">Confirm</button>
+          <form method="dialog"><button class="btn btn-ghost" autofocus>Cancel</button></form>
         </div>
-
-        <footer class="fixed bottom-0 flex flex-col justify-center items-center w-full p-5">
-            <span class="text-xs md:text-sm">
-                Having issues? Contact <a class="link link-info" target="blank_" href="mailto:dirit@uvicecss.ca">dirit@uvicecss.ca</a>.<br/>
-            </span>
-
-              <p class="mt-1 text-[10px] md:text-xs text-gray-500 italic max-w-3xl text-center">
-                <strong>DISCLAIMER:</strong>
-                the lockers are located in buildings which students have 24-hour keycard access to, 
-                so use caution regarding storage of valuables. 
-                The ECSS takes no responsibility for the security of items stored in student lockers.
-            </p>
-
-        </footer>
-    </body>
+      </div>
+      <form method="dialog" class="modal-backdrop"><button aria-label="Close">close</button></form>
+    </dialog>
+  </body>
 </html>
+{{end}}
+
+{{define "themetoggle"}}
+<button
+  type="button"
+  aria-label="Toggle dark mode"
+  class="btn btn-ghost btn-circle btn-sm"
+  onclick="toggleTheme()"
+>
+  <svg class="theme-moon h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+  </svg>
+  <svg class="theme-sun h-5 w-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.36 6.36l-.7-.7M6.34 6.34l-.7-.7m12.72 0l-.7.7M6.34 17.66l-.7.7M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+  </svg>
+</button>
 {{end}}

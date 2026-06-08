@@ -1,57 +1,41 @@
 {{define "content"}}
-<main class="grid h-full place-items-center" id="dashboard-content">
+<main class="flex-1 grid place-items-center px-4 py-8" id="dashboard-content">
   {{if .HasLocker}}
 
-  <div class="text-center">
-    <h2 class="text-lg">Locker registered!</h2>
-    <h1 class="text-primary text-5xl font-semibold">{{.LockerName}}</h1>
-    <span class="text-xs opacity-60 italic">Expire on {{.ExpireAt}}</span>
-    <br>
-    <p class="text-sm text-gray-600 mt-2 mb-4"><b>To renew your locker, deregister first and register for the same locker again.</b></p>
-<form
-  hx-post="/dash/deregister"
-  hx-target="#dashboard-content"
-  hx-swap="innerHTML"
->
-<button
-  class="btn btn-error"
-
-  type="submit"
->
-  Deregister Locker
-</button>
-<!-- i'm really bad at UI :( -parsa https://flowbite.com/docs/components/buttons/  -->
-
-</form>
-
-  </div>
-
-
+  {{template "locker_status.html" .}}
 
   {{else}}
 
-  <section class="flex flex-col gap-3 justify-start items-center">
-    <h3>You have no locker registered for this term.</h3>
-    <h2 class="text-primary text-xl">Locker registration:</h2>
-    <form
-      hx-put="/api/dash/register"
-      hx-target="#locker-list"
-      hx-swap="innerHTML"
-      class="p-3 shadow rounded-lg w-max"
-    >
-      <label class="input input-bordered flex items-center gap-2">
-        ELW
-        <input
-          name="locker"
-          hx-put="/dash/api/locker"
-          hx-trigger="keyup changed delay:500ms"
-          type="number"
-          class="grow"
-        />
-      </label>
-    </form>
+  <section class="flex flex-col items-center gap-5 w-full max-w-md fade-rise">
+    <div class="text-center">
+      <h2 class="text-xl font-semibold">No locker yet</h2>
+      <p class="text-sm opacity-70">
+        available lockers
+      </p>
+    </div>
 
-    <section id="locker-list"></section>
+    <div class="card border border-base-300 bg-base-200 shadow-lg w-full">
+      <div class="card-body gap-4">
+        <label class="input flex items-center gap-2">
+          <span class="font-semibold opacity-70">ELW</span>
+          <input
+            name="locker"
+            hx-put="/dash/api/locker"
+            hx-trigger="keyup changed delay:400ms"
+            hx-target="#locker-list"
+            hx-swap="innerHTML"
+            hx-indicator="#search-spinner"
+            type="number"
+            class="grow"
+            placeholder="locker number"
+            aria-label="Locker number"
+          />
+          <span id="search-spinner" class="loading loading-spinner loading-sm htmx-indicator"></span>
+        </label>
+
+        <section id="locker-list"></section>
+      </div>
+    </div>
   </section>
 
   {{end}}

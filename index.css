@@ -1,11 +1,78 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark;
+}
+
+@source "./templates";
+@source "./internal";
+
+@theme {
+  --font-sans: "Roboto", sans-serif;
+}
+
+/* ECSS brand orange, applied over the built-in light + dark themes.
+   :root[...] (0,2,0) outranks daisyUI's [data-theme] (0,1,0) regardless of order. */
+:root[data-theme="light"],
+:root[data-theme="dark"] {
+  --color-primary: #e88419;
+  --color-primary-content: #ffffff;
+  --color-secondary: #ff931e;
+  --color-secondary-content: #ffffff;
+  --color-info: #de7a0f;
+  --color-info-content: #ffffff;
+}
 
 form .form-error {
-    @apply text-red-500;
+  @apply text-error;
 }
 
 main {
-    @apply mx-auto max-w-screen-md;
+  @apply mx-auto max-w-screen-md;
+}
+
+/* theme toggle: show the icon for the action the click performs */
+.theme-sun {
+  display: none;
+}
+[data-theme="dark"] .theme-sun {
+  display: block;
+}
+[data-theme="dark"] .theme-moon {
+  display: none;
+}
+
+/* gentle entrance for swapped-in content */
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-rise {
+  animation: fade-rise 280ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-rise {
+    animation: none;
+  }
+  .hover-3d > :first-child {
+    transition: none;
+  }
+}
+
+/* hide the up/down spinner on number inputs (locker search) */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
 }

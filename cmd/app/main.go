@@ -52,6 +52,7 @@ func main() {
 	app.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
 	app.Handle("/", http.HandlerFunc(router.Home))
 	app.Handle("/sessionexpired", http.HandlerFunc(router.SessionExpired))
+	app.NotFound(router.NotFound)
 
 	app.Route("/auth", func(r chi.Router) {
 		r.Handle("/", http.HandlerFunc(auth.Auth))
@@ -67,6 +68,7 @@ func main() {
 		r.Handle("/locker/register", http.HandlerFunc(dash.DashLockerRegister))
 		r.Handle("/api/locker", http.HandlerFunc(dash.ApiLocker))
 		r.Post("/deregister", dash.DashDeregister)
+		r.Post("/renew", dash.DashRenew)
 	})
 
 	app.Route("/admin", func(r chi.Router) {
