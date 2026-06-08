@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 
+	"github.com/parsa222/ECSS-Lockers/internal"
 	"github.com/parsa222/ECSS-Lockers/internal/httputil"
 )
 
@@ -12,7 +13,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	// Parse the template files
-	httputil.WriteTemplatePage(w, nil, "templates/index.html")
+	httputil.WriteTemplatePage(w, struct{ Debug bool }{Debug: internal.Debug}, "templates/index.html")
 }
 
 func SessionExpired(w http.ResponseWriter, r *http.Request) {

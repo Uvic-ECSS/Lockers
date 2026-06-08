@@ -3,6 +3,7 @@ package auth
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/parsa222/ECSS-Lockers/internal"
 	"github.com/parsa222/ECSS-Lockers/internal/crypto"
@@ -29,17 +30,14 @@ func AuthApiLogin(w http.ResponseWriter, r *http.Request) {
 		httputil.WriteResponse(w, http.StatusBadRequest, []byte("invalid form data"))
 		return
 	}
-	// for local testing, dont uncomment lol
-	// if r.FormValue("email") == "test" {
+	// DEBUG-only shortcut for local testing
+	if internal.Debug && r.FormValue("email") == "test" {
+		setSessionCookies(w, "test@uvic.ca")
+		w.Header().Add("HX-Redirect", "/dash")
+		return
+	}
 
-	// 	email := "test@uvic.ca"
-
-	// 	setSessionCookies(w, email)
-	// 	w.Header().Add("HX-Redirect", "/dash")
-	// 	return
-	// }
-
-	userEmail := r.FormValue("email") + "@uvic.ca"
+	userEmail := strings.ToLower(r.FormValue("email")) + "@uvic.ca"
 	if !email.ValidUVicEmail(userEmail) {
 		data := `
             <button type="submit" class="btn btn-primary btn-block">Login</button>

@@ -2,7 +2,7 @@
 <!-- No nav bar on this page -->
 {{end}} {{define "content"}}
 
-<!-- 
+<!--
 
 https://tailwindcss.com/plus/ui-blocks/application-ui/feedback/alerts
  chekc l8r
@@ -160,7 +160,12 @@ document.addEventListener('DOMContentLoaded', function() {
     alt="UVic ECSS Logo"
   />
 
-  <h1 class="text-3xl font-bold">Locker registration</h1>
+  <div class="flex flex-col items-center gap-1">
+    <h1 class="text-3xl font-bold">Locker registration</h1>
+    {{if .Debug}}
+    <p class="text-error text-sm font-semibold">DEBUG MODE - local testing.</p>
+    {{end}}
+  </div>
 
   <form
     hx-post="/auth/api/login"

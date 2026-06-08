@@ -3,16 +3,11 @@ package auth
 import (
 	"context"
 	"net/http"
-	"regexp"
 	"strings"
 
 	"github.com/parsa222/ECSS-Lockers/internal/crypto"
 	"github.com/parsa222/ECSS-Lockers/internal/httputil"
 	"github.com/parsa222/ECSS-Lockers/internal/logger"
-)
-
-var (
-	AuthRouteRegex *regexp.Regexp = regexp.MustCompile(`/auth/`)
 )
 
 func AuthenticatedUserOnly(next http.Handler) http.Handler {
