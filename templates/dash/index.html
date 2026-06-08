@@ -1,43 +1,37 @@
 {{define "content"}}
+{{if .HasLocker}}
 <main class="flex-1 grid place-items-center px-4 py-8" id="dashboard-content">
-  {{if .HasLocker}}
-
   {{template "locker_status.html" .}}
-
-  {{else}}
-
-  <section class="flex flex-col items-center gap-5 w-full max-w-md fade-rise">
-    <div class="text-center">
-      <h2 class="text-xl font-semibold">No locker yet</h2>
-      <p class="text-sm opacity-70">
-        available lockers
-      </p>
-    </div>
-
-    <div class="card border border-base-300 bg-base-200 shadow-lg w-full">
-      <div class="card-body gap-4">
-        <label class="input flex items-center gap-2">
-          <span class="font-semibold opacity-70">ELW</span>
-          <input
-            name="locker"
-            hx-put="/dash/api/locker"
-            hx-trigger="keyup changed delay:400ms"
-            hx-target="#locker-list"
-            hx-swap="innerHTML"
-            hx-indicator="#search-spinner"
-            type="number"
-            class="grow"
-            placeholder="locker number"
-            aria-label="Locker number"
-          />
-          <span id="search-spinner" class="loading loading-spinner loading-sm htmx-indicator"></span>
-        </label>
-
-        <section id="locker-list"></section>
-      </div>
-    </div>
-  </section>
-
-  {{end}}
 </main>
+{{else}}
+<main class="flex-1 flex flex-col items-center gap-5 px-4 pt-10 pb-8" id="dashboard-content">
+  <div class="text-center fade-rise">
+    <h2 class="text-xl font-semibold">No locker yet</h2>
+    <p class="text-sm opacity-70">available lockers</p>
+  </div>
+
+  <div class="card border border-base-300 bg-base-200 shadow-lg w-full max-w-md fade-rise">
+    <div class="card-body gap-4">
+      <label class="input flex items-center gap-2">
+        <span class="font-semibold opacity-70">ELW</span>
+        <input
+          name="locker"
+          hx-put="/dash/api/locker"
+          hx-trigger="keyup changed delay:400ms"
+          hx-target="#locker-list"
+          hx-swap="innerHTML"
+          hx-indicator="#search-spinner"
+          type="number"
+          class="grow"
+          placeholder="locker number"
+          aria-label="Locker number"
+        />
+        <span id="search-spinner" class="loading loading-spinner loading-sm htmx-indicator"></span>
+      </label>
+
+      <section id="locker-list"></section>
+    </div>
+  </div>
+</main>
+{{end}}
 {{end}}

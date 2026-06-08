@@ -3,48 +3,42 @@
 {{end}}
 
 {{define "content"}}
-<main class="flex-1 grid place-items-center px-4 py-10">
-  <div class="w-full max-w-sm flex flex-col items-center gap-5">
-    <img class="w-28" src="/assets/imgs/ECSS_orange_trans.png" alt="UVic ECSS Logo" />
+<main class="flex-1 flex flex-col items-center justify-center gap-6 px-4 py-10 text-center">
+  <img class="w-40" src="/assets/imgs/ECSS_orange_trans.png" alt="UVic ECSS Logo" />
 
-    <div class="card w-full bg-base-100 shadow-xl border border-base-300">
-      <div class="card-body items-center text-center gap-5">
-        <div class="flex flex-col items-center gap-1">
-          <h1 class="text-2xl font-bold">Locker registration</h1>
-          {{if .Debug}}
-          <p class="text-error text-sm font-semibold">DEBUG MODE - local testing.</p>
-          {{end}}
-        </div>
-
-        <form
-          hx-post="/auth/api/login"
-          hx-trigger="submit"
-          hx-swap="innerHTML"
-          hx-target="#output"
-          hx-disabled-elt="find button[type='submit'], find input[type='text']"
-          class="flex flex-col gap-4 items-center w-full"
-        >
-          <div id="email-input" class="hidden w-full">
-            <label class="input flex items-center gap-2 w-full">
-              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-4 w-4 opacity-70">
-                <path d="M2.5 3A1.5 1.5 0 0 0 1 4.5v.793c.026.009.051.02.076.032L7.674 8.51c.206.1.446.1.652 0l6.598-3.185A.755.755 0 0 1 15 5.293V4.5A1.5 1.5 0 0 0 13.5 3h-11Z" />
-                <path d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z" />
-              </svg>
-              <input name="email" type="text" class="grow" placeholder="NetLinkID" aria-label="NetLinkID" />
-              <span class="opacity-70">@uvic.ca</span>
-            </label>
-          </div>
-
-          <div id="output" class="w-full flex flex-col gap-3 items-center">
-            <button type="button" class="btn btn-primary btn-block" onclick="openRules()">
-              Login
-            </button>
-            <p class="text-xs opacity-60">Please read the terms first.</p>
-          </div>
-        </form>
-      </div>
-    </div>
+  <div class="flex flex-col items-center gap-1">
+    <h1 class="text-3xl font-bold">Locker registration</h1>
+    {{if .Debug}}
+    <p class="text-error text-sm font-semibold">DEBUG MODE - local testing.</p>
+    {{end}}
   </div>
+
+  <form
+    hx-post="/auth/api/login"
+    hx-trigger="submit"
+    hx-swap="innerHTML"
+    hx-target="#output"
+    hx-disabled-elt="find button[type='submit'], find input[type='text']"
+    class="flex flex-col gap-4 items-center w-full max-w-xs"
+  >
+    <div id="email-input" class="hidden w-full">
+      <label class="input input-lg rounded-full flex items-center gap-2 w-full">
+        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="h-6 w-6 opacity-70">
+          <path d="M2.5 3A1.5 1.5 0 0 0 1 4.5v.793c.026.009.051.02.076.032L7.674 8.51c.206.1.446.1.652 0l6.598-3.185A.755.755 0 0 1 15 5.293V4.5A1.5 1.5 0 0 0 13.5 3h-11Z" />
+          <path d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z" />
+        </svg>
+        <input name="email" type="text" class="grow" placeholder="NetLinkID" aria-label="NetLinkID" />
+        <span class="opacity-70">@uvic.ca</span>
+      </label>
+    </div>
+
+    <div id="output" class="w-full flex flex-col gap-3 items-center">
+      <button type="button" class="btn btn-primary btn-lg rounded-full btn-block" onclick="openRules()">
+        Login
+      </button>
+      <p class="text-xs opacity-60">Please read the terms first.</p>
+    </div>
+  </form>
 </main>
 
 <dialog id="rules-modal" class="modal">
@@ -104,7 +98,7 @@
     document.getElementById("rules-modal").close();
     document.getElementById("email-input").classList.remove("hidden");
     document.getElementById("output").innerHTML =
-      '<button type="submit" class="btn btn-primary btn-block">Send login link</button>';
+      '<button type="submit" class="btn btn-primary btn-lg rounded-full btn-block">Send login link</button>';
   }
   document.addEventListener("DOMContentLoaded", openRules);
 </script>
