@@ -16,8 +16,8 @@ import (
 
 const (
 	adminSessionMaxAge int    = 8 * 60 * 60 // 8 h
-	loginWindowSecs    uint64 = 15 * 60    
-	loginMaxFails      int    = 5           // IP limit
+	loginWindowSecs    uint64 = 15 * 60
+	loginMaxFails      int    = 5 // IP limit
 )
 
 var (
@@ -25,7 +25,7 @@ var (
 	adminPassword string
 
 	failsMu sync.Mutex
-	fails   = map[string][]uint64{} // unix time 
+	fails   = map[string][]uint64{} // unix time
 )
 
 func Initialize() {
