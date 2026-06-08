@@ -1,7 +1,6 @@
 package router
 
 import (
-	"html/template"
 	"net/http"
 
 	"github.com/parsa222/ECSS-Lockers/internal"
@@ -10,8 +9,7 @@ import (
 )
 
 func Home(w http.ResponseWriter, r *http.Request) {
-	// Cache for 15 mins
-	w.Header().Add("Cache-Control", "max-age=900")
+	w.Header().Set("Cache-Control", "no-cache")
 	w.WriteHeader(http.StatusOK)
 
 	// Parse the template files
@@ -19,8 +17,8 @@ func Home(w http.ResponseWriter, r *http.Request) {
 }
 
 func SessionExpired(w http.ResponseWriter, r *http.Request) {
-	// Cache for 15 mins
-	w.Header().Add("Cache-Control", "max-age=900")
+	// versioned asset link stays the same
+	w.Header().Set("Cache-Control", "no-cache")
 	w.WriteHeader(http.StatusOK)
 
 	// Parse the template files
@@ -28,7 +26,7 @@ func SessionExpired(w http.ResponseWriter, r *http.Request) {
 }
 
 func NotFound(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("templates/base.html", "templates/404.html")
+	tmpl, err := httputil.NewTemplate("templates/base.html", "templates/404.html")
 	if err != nil {
 		logger.Error.Printf("error parsing 404 page: %v\n", err)
 		httputil.WriteResponse(w, http.StatusNotFound, []byte("404 - not found"))

@@ -49,7 +49,7 @@ func main() {
 	app.Use(requestLogger)
 	app.Use(middleware.Recoverer)
 
-	app.Handle("/assets/*", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
+	app.Handle("/assets/*", cacheAssets(http.StripPrefix("/assets/", http.FileServer(http.Dir("assets")))))
 	app.Handle("/", http.HandlerFunc(router.Home))
 	app.Handle("/sessionexpired", http.HandlerFunc(router.SessionExpired))
 	app.NotFound(router.NotFound)
@@ -81,6 +81,13 @@ func main() {
 	logger.Info.Printf("Listening at http://localhost%s\n", addr)
 	logger.Info.Printf("for local dev, use http://127.0.0.1%s, for more information, see: https://stackoverflow.com/a/1188145/19114163\n", addr)
 	logger.Error.Fatal(http.ListenAndServe(addr, app))
+}
+
+func cacheAssets(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "public, max-age=86400")
+		next.ServeHTTP(w, r)
+	})
 }
 
 func requestLogger(next http.Handler) http.Handler {
