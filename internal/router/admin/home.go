@@ -16,7 +16,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 		Registrations []registration
 		Term          string
 	}{
-		Term: time.GetCurrentTerm().Format("200601"),
+		Term: formatTermName(stdtime.Now()),
 	}
 
 	var err error
@@ -86,4 +86,18 @@ func queryAllRegistrations() ([]registration, error) {
 	}
 
 	return lockers, nil
+}
+
+func formatTermName(t stdtime.Time) string {
+	year := t.Year()
+	month := t.Month()
+
+	switch {
+	case month >= stdtime.September && month <= stdtime.December:
+		return "Fall " + stdtime.Date(year, 1, 1, 0, 0, 0, 0, t.Location()).Format("2006")
+	case month >= stdtime.January && month <= stdtime.April:
+		return "Spring " + stdtime.Date(year, 1, 1, 0, 0, 0, 0, t.Location()).Format("2006")
+	default:
+		return "Summer " + stdtime.Date(year, 1, 1, 0, 0, 0, 0, t.Location()).Format("2006")
+	}
 }

@@ -1,6 +1,6 @@
 {{define "content"}}
 <main class="flex-1 w-full max-w-5xl mx-auto px-4 py-8 flex flex-col gap-6">
-  <h1 class="text-2xl text-center font-semibold">Registrations {{.Term}}</h1>
+  <h1 class="text-2xl text-center font-semibold">Registrations for {{.Term}}</h1>
 
   {{if .HasData}}
   {{template "lockertable" .}}
