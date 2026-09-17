@@ -263,17 +263,44 @@ func DashDeregister(w http.ResponseWriter, r *http.Request) {
 	db, lock := database.Lock()
 	defer lock.Unlock()
 
-	stmt, err := db.Prepare(`DELETE FROM registration WHERE user = :email`)
+	tx, err := db.Begin()
 	if err != nil {
-		logger.Error.Printf("failed to prepare delete statement: %v\n", err)
+		logger.Error.Printf("failed to begin deregistration transaction: %v\n", err)
 		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
 		return
 	}
-	defer stmt.Close()
+	defer tx.Rollback()
 
-	_, err = stmt.Exec(sql.Named("email", userEmail))
+	result, err := tx.Exec(`
+		INSERT INTO history (locker, user, name)
+		SELECT locker, user, name FROM registration WHERE user = :email;`,
+		sql.Named("email", userEmail))
+	if err != nil {
+		logger.Error.Printf("error recording deregistration history: %v\n", err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		logger.Error.Printf("error checking deregistration history: %v\n", err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
+	}
+	if rowsAffected == 0 {
+		httputil.WriteResponse(w, http.StatusNotFound, nil)
+		return
+	}
+
+	_, err = tx.Exec(`DELETE FROM registration WHERE user = :email`, sql.Named("email", userEmail))
 	if err != nil {
 		logger.Error.Printf("error deregistering locker: %v\n", err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
+	}
+
+	if err = tx.Commit(); err != nil {
+		logger.Error.Printf("error committing deregistration: %v\n", err)
 		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
 		return
 	}

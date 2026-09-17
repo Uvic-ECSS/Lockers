@@ -75,6 +75,7 @@ func main() {
 		r.Use(admin.AdminTokenChecker)
 		r.Get("/", admin.Home)
 		r.Delete("/registration", admin.Registrations)
+		r.Get("/history", admin.History)
 		r.Get("/registration/export", admin.Export)
 	})
 

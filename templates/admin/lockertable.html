@@ -5,6 +5,9 @@
       const tr = event.target.closest("tr");
       if (tr) tr.remove();
     }
+    if (event.detail.elt.matches("[data-history-button]") && event.detail.xhr.status === 200) {
+      document.getElementById("history-modal").showModal();
+    }
   });
 </script>
 
@@ -12,19 +15,18 @@
   <table class="table table-zebra table-pin-rows">
     <thead>
       <tr>
-        <th><span class="sr-only">Row</span></th>
         <th>Locker</th>
         <th>Name</th>
         <th>Email</th>
         <th>Expires on</th>
-        <th><span class="sr-only">Actions</span></th>
+        <th><span class="sr-only">Remove</span></th>
+        <th><span class="sr-only">History</span></th>
       </tr>
     </thead>
 
     <tbody>
       {{range $reg := .Registrations}}
       <tr>
-        <th class="text-primary">{{$reg.RowIndex}}</th>
         <td class="font-medium">{{$reg.Locker}}</td>
         <td>{{$reg.Name}}</td>
         <td class="opacity-80">{{$reg.Email}}</td>
@@ -39,9 +41,28 @@
             remove
           </button>
         </td>
+        <td>
+          <button
+            class="btn btn-outline btn-primary btn-xs"
+            type="button"
+            data-history-button
+            hx-get="/admin/history?locker={{$reg.Locker | urlquery}}"
+            hx-target="#history-modal-content"
+            hx-swap="innerHTML"
+          >
+            history
+          </button>
+        </td>
       </tr>
       {{end}}
     </tbody>
   </table>
 </div>
+
+<dialog id="history-modal" class="modal" aria-labelledby="history-modal-title">
+  <div id="history-modal-content" class="modal-box">
+    <h2 id="history-modal-title" class="text-lg font-semibold">Locker history</h2>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button aria-label="Close">close</button></form>
+</dialog>
 {{end}}

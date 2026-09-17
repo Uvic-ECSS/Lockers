@@ -14,3 +14,13 @@ CREATE TABLE IF NOT EXISTS registration (
 
 CREATE INDEX IF NOT EXISTS user_registration 
 ON registration (user);
+
+CREATE TABLE IF NOT EXISTS history (
+    locker varchar(255) NOT NULL,
+    user varchar(255) NOT NULL,
+    name varchar(255) NOT NULL,
+    removed datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS locker_history
+ON history (locker, removed);

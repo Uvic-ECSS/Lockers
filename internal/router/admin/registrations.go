@@ -28,15 +28,21 @@ func Registrations(w http.ResponseWriter, r *http.Request) {
 	db, lock := database.Lock()
 	defer lock.Unlock()
 
-	stmt, err := db.Prepare(`DELETE FROM registration WHERE locker = :locker;`)
-	if err != nil {
-		logger.Error.Fatal(err)
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*stdtime.Second)
 	defer cancel()
 
-	result, err := stmt.ExecContext(ctx, sql.Named("locker", locker))
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		logger.Error.Println(err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
+	}
+	defer tx.Rollback()
+
+	result, err := tx.ExecContext(ctx, `
+		INSERT INTO history (locker, user, name)
+		SELECT locker, user, name FROM registration WHERE locker = :locker;`,
+		sql.Named("locker", locker))
 	if err != nil {
 		logger.Error.Println(err)
 		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
@@ -44,11 +50,80 @@ func Registrations(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rowsAff, err := result.RowsAffected()
-	logger.Trace.Printf("Deleted locker %s, result: %d row(s), err: %v\n", locker, rowsAff, err)
-
-	status := http.StatusNoContent
-	if rowsAff == 0 {
-		status = http.StatusNotFound
+	if err != nil {
+		logger.Error.Println(err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
 	}
-	httputil.WriteResponse(w, status, nil)
+	if rowsAff == 0 {
+		httputil.WriteResponse(w, http.StatusNotFound, nil)
+		return
+	}
+
+	_, err = tx.ExecContext(ctx, `DELETE FROM registration WHERE locker = :locker;`,
+		sql.Named("locker", locker))
+	if err != nil {
+		logger.Error.Println(err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
+	}
+
+	if err = tx.Commit(); err != nil {
+		logger.Error.Println(err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
+	}
+
+	logger.Trace.Printf("Deleted locker %s, result: %d row(s)\n", locker, rowsAff)
+	httputil.WriteResponse(w, http.StatusNoContent, nil)
+}
+
+type historyEntry struct {
+	Name    string
+	Email   string
+	Removed stdtime.Time
+}
+
+func History(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		httputil.WriteResponse(w, http.StatusMethodNotAllowed, nil)
+		return
+	}
+
+	locker := r.URL.Query().Get("locker")
+	db, lock := database.Lock()
+	defer lock.Unlock()
+
+	rows, err := db.Query(`
+		SELECT name, user, removed
+		FROM history
+		WHERE locker = :locker
+		ORDER BY removed DESC;`, sql.Named("locker", locker))
+	if err != nil {
+		logger.Error.Println(err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
+	}
+	defer rows.Close()
+
+	entries := make([]historyEntry, 0)
+	for rows.Next() {
+		entry := historyEntry{}
+		if err := rows.Scan(&entry.Name, &entry.Email, &entry.Removed); err != nil {
+			logger.Error.Println(err)
+			httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+			return
+		}
+		entries = append(entries, entry)
+	}
+	if err := rows.Err(); err != nil {
+		logger.Error.Println(err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
+	}
+
+	httputil.WriteTemplateComponent(w, struct {
+		Locker  string
+		Entries []historyEntry
+	}{locker, entries}, "templates/admin/historytable.html")
 }

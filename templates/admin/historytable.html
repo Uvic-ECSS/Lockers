@@ -1,0 +1,30 @@
+<h2 id="history-modal-title" class="text-lg font-semibold">History for {{.Locker}}</h2>
+
+{{if .Entries}}
+<div class="overflow-x-auto mt-4">
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Removed</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Entries}}
+      <tr>
+        <td>{{.Name}}</td>
+        <td>{{.Email}}</td>
+        <td class="whitespace-nowrap">{{.Removed.Format "Jan 2, 2006 at 3:04pm"}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+{{else}}
+<p class="mt-4 opacity-70">No previous users.</p>
+{{end}}
+
+<div class="modal-action">
+  <form method="dialog"><button class="btn btn-ghost">Close</button></form>
+</div>
