@@ -18,7 +18,8 @@
         <th>Locker</th>
         <th>Name</th>
         <th>Email</th>
-        <th>Expires on</th>
+        <th>Expiry Date</th>
+        <th>Email Sent</th>
         <th><span class="sr-only">Remove</span></th>
         <th><span class="sr-only">History</span></th>
       </tr>
@@ -31,6 +32,7 @@
         <td>{{$reg.Name}}</td>
         <td class="opacity-80">{{$reg.Email}}</td>
         <td class="whitespace-nowrap">{{$reg.Expiry}}</td>
+        <td class="whitespace-nowrap">{{if $reg.EmailSent}}Yes{{else}}No{{end}}</td>
         <td>
           <button
             class="btn btn-outline btn-error btn-xs"
