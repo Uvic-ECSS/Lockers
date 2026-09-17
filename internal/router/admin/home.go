@@ -53,7 +53,8 @@ func queryAllRegistrations() ([]registration, error) {
 
 	stmt, err := db.Prepare(`
         SELECT locker, user, name, expiry, expiryEmailSent
-        FROM registration;`)
+        FROM registration
+		ORDER BY locker;`)
 
 	if err != nil {
 		return nil, err
