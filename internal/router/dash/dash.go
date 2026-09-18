@@ -115,12 +115,12 @@ func ApiLocker(w http.ResponseWriter, r *http.Request) {
 	defer lock.Unlock()
 
 	stmt, err := db.Prepare(`
-		SELECT locker.id, locker_registrations.locker_id
-        FROM locker
+		SELECT lockers.locker_id, locker_registrations.locker_id
+		FROM lockers
 		LEFT JOIN locker_registrations
-		ON locker.id = locker_registrations.locker_id
-        WHERE locker.id 
-        LIKE ?;`)
+			ON lockers.locker_id = locker_registrations.locker_id
+			WHERE lockers.locker_id LIKE ?
+		;`)
 
 	if err != nil {
 		logger.Error.Fatal("stmt error:", err)

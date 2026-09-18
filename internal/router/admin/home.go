@@ -128,9 +128,9 @@ func queryAllRegistrations() ([]locker_record, error) {
 
 func queryAllLockers() ([]locker_record, error) {
 	return queryAll(`
-		SELECT id
-		FROM locker
-		ORDER BY id;`,
+		SELECT locker_id
+		FROM lockers
+		ORDER BY locker_id;`,
 		func(rows *sql.Rows, rowIndex uint16) (locker_record, error) {
 			l := locker_record{RowIndex: rowIndex}
 			err := rows.Scan(&l.LockerId)

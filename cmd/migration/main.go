@@ -37,6 +37,61 @@ func main() {
 
 	logger.Info.Println("created schema.")
 
+	var oldLockerTableExists bool
+	err = db.QueryRow(`
+		SELECT EXISTS (
+			SELECT 1
+			FROM sqlite_master
+			WHERE type = 'table' AND name = 'locker'
+		);`,
+	).Scan(&oldLockerTableExists)
+	if err != nil {
+		logger.Error.Fatal(err)
+	}
+
+	if oldLockerTableExists {
+		if _, err := db.Exec(`
+			INSERT OR IGNORE INTO lockers (locker_id)
+			SELECT id
+			FROM locker
+			WHERE id IS NOT NULL AND id <> '';
+		`); err != nil {
+			logger.Error.Fatal(err)
+		}
+
+		logger.Info.Println("migrated lockers from locker(id) to lockers(locker_id)")
+	}
+
+	var oldRegistrationTableExists bool
+	err = db.QueryRow(`
+		SELECT EXISTS (
+			SELECT 1
+			FROM sqlite_master
+			WHERE type = 'table' AND name = 'registration'
+		);`,
+	).Scan(&oldRegistrationTableExists)
+	if err != nil {
+		logger.Error.Fatal(err)
+	}
+
+	if oldRegistrationTableExists {
+		if _, err := db.Exec(`
+			INSERT OR IGNORE INTO locker_registrations (
+				locker_id,
+				user_email,
+				user_name,
+				expiry_date,
+				expiry_email_sent
+			)
+			SELECT locker, user, name, expiry, expiryEmailSent
+			FROM registration;
+		`); err != nil {
+			logger.Error.Fatal(err)
+		}
+
+		logger.Info.Println("migrated registrations from registration to locker_registrations")
+	}
+
 	logger.Info.Println("seeding 200 lockers..")
 	// eeehhh i'm not proud of how this is being done but
 	// database/sql does not support array type for query
@@ -44,7 +99,7 @@ func main() {
 	for i := 0; i < 200; i++ {
 		locker := fmt.Sprintf("ELW %03d", i+1)
 
-		stmt, err := db.Prepare(`INSERT INTO locker (id) VALUES (:id);`)
+		stmt, err := db.Prepare(`INSERT INTO lockers (locker_id) VALUES (:id);`)
 		if err != nil {
 			logger.Error.Fatal(err)
 		}
