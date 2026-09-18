@@ -23,7 +23,7 @@ func Export(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	currentTerm := time.GetCurrentTerm().Format("200601")
+	currentTerm := strings.ToLower(strings.ReplaceAll(formatTermName(time.GetCurrentTerm()), " ", ""))
 	value := fmt.Sprintf("attachment; filename=registrations_%s.csv", currentTerm)
 	w.Header().Add("Content-Disposition", value)
 	httputil.WriteResponse(w, http.StatusOK, toCSV(lockers))
