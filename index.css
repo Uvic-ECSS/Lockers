@@ -37,6 +37,7 @@ main {
 
 .admin-table-frame {
   width: fit-content;
+  min-width: min(100%, 22rem);
   max-width: 100%;
   margin-inline: auto;
   box-shadow: 0 12px 30px color-mix(in srgb, var(--color-base-content) 5%, transparent);
