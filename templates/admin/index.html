@@ -1,17 +1,73 @@
 {{define "content"}}
 <main class="flex-1 w-full max-w-5xl mx-auto px-4 py-8 flex flex-col gap-6">
-  <h1 class="text-2xl text-center font-semibold">Registrations for {{.Term}}</h1>
+  <h1 class="text-2xl text-center font-semibold">Lockers for {{.Term}}</h1>
 
-  {{if .HasData}}
-  {{template "lockertable" .}}
-
-  <div class="flex justify-center">
-    <a href="/admin/registration/export" class="btn btn-primary" download>
-      Export data (CSV)
-    </a>
+  <div class="tabs tabs-boxed self-center" role="tablist" aria-label="Locker lists">
+    <button class="tab tab-active" type="button" role="tab" aria-selected="true" data-admin-tab="registrations">
+      Registered
+    </button>
+    <button class="tab" type="button" role="tab" aria-selected="false" data-admin-tab="unregistered">
+      Unregistered
+    </button>
   </div>
-  {{else}}
-  <div class="text-center opacity-70 py-10">No registrations for this term.</div>
-  {{end}}
+
+  <script>
+    document.querySelectorAll("[data-admin-tab]").forEach(function (tab) {
+      tab.addEventListener("click", function () {
+        var selected = tab.dataset.adminTab;
+        document.querySelectorAll("[data-admin-tab]").forEach(function (otherTab) {
+          var active = otherTab === tab;
+          otherTab.classList.toggle("tab-active", active);
+          otherTab.setAttribute("aria-selected", active);
+        });
+        document.querySelectorAll("[data-admin-panel]").forEach(function (panel) {
+          panel.hidden = panel.dataset.adminPanel !== selected;
+        });
+      });
+    });
+  </script>
+
+  <script>
+    document.body.addEventListener("htmx:afterRequest", function (event) {
+      var element = event.detail.elt;
+
+      if (event.detail.xhr.status === 200 && element.matches("[data-history-button]")) {
+        document.getElementById("history-modal").showModal();
+      }
+
+      if (event.detail.xhr.status === 204 && element.matches("[hx-delete]")) {
+        window.location.reload();
+      }
+    });
+  </script>
+
+  <dialog id="history-modal" class="modal" aria-labelledby="history-modal-title">
+    <div id="history-modal-content" class="modal-box">
+      <h2 id="history-modal-title" class="text-lg font-semibold">Locker history</h2>
+    </div>
+    <form method="dialog" class="modal-backdrop"><button aria-label="Close">close</button></form>
+  </dialog>
+
+  <div data-admin-panel="registrations">
+    {{if .HasRegistrations}}
+    {{template "registered_table" .}}
+
+    <div class="flex justify-center">
+      <a href="/admin/registration/export" class="btn btn-primary" download>
+        Export registrations (CSV)
+      </a>
+    </div>
+    {{else}}
+    <div class="text-center opacity-70 py-10">No registrations for this term.</div>
+    {{end}}
+  </div>
+
+  <div data-admin-panel="unregistered" hidden>
+    {{if .HasUnregisteredLockers}}
+    {{template "unregistered_table" .}}
+    {{else}}
+    <div class="text-center opacity-70 py-10">No unregistered lockers for this term.</div>
+    {{end}}
+  </div>
 </main>
 {{end}}

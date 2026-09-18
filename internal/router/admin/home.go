@@ -1,7 +1,9 @@
 package admin
 
 import (
+	"database/sql"
 	"net/http"
+	"strconv"
 	stdtime "time"
 
 	"github.com/parsa222/ECSS-Lockers/internal/database"
@@ -10,23 +12,56 @@ import (
 	"github.com/parsa222/ECSS-Lockers/internal/time"
 )
 
+type locker_record struct {
+	RowIndex        uint16
+	LockerId        string
+	UserName        string
+	UserEmail       string
+	ExpiryDate      stdtime.Time
+	ExpiryEmailSent bool
+	Expiry          string
+	RemovedDate     stdtime.Time
+	Removed         string
+}
+
 func Home(w http.ResponseWriter, r *http.Request) {
 	data := struct {
-		HasData       bool
-		Registrations []registration
-		Term          string
+		AllLockers             []locker_record
+		HasLockers             bool
+		RegisteredLockers      []locker_record
+		HasRegistrations       bool
+		UnregisteredLockers    []locker_record
+		HasUnregisteredLockers bool
+		Term                   string
 	}{
 		Term: formatTermName(stdtime.Now()),
 	}
 
 	var err error
-	data.Registrations, err = queryAllRegistrations()
-	data.HasData = len(data.Registrations) != 0
 
+	data.AllLockers, err = queryAllLockers()
 	if err != nil {
 		logger.Error.Println(err)
 		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
 		return
+	}
+	if len(data.AllLockers) > 0 {
+		data.HasLockers = true
+	}
+
+	data.RegisteredLockers, err = queryAllRegistrations()
+	if err != nil {
+		logger.Error.Println(err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
+	}
+	if len(data.RegisteredLockers) > 0 {
+		data.HasRegistrations = true
+	}
+
+	data.UnregisteredLockers = FilterUnregistered(data.AllLockers, data.RegisteredLockers)
+	if len(data.UnregisteredLockers) > 0 {
+		data.HasUnregisteredLockers = true
 	}
 
 	httputil.WriteTemplatePage(
@@ -34,71 +69,131 @@ func Home(w http.ResponseWriter, r *http.Request) {
 		data,
 		"templates/nav.html",
 		"templates/admin/index.html",
-		"templates/admin/lockertable.html")
+		"templates/admin/registered_table.html",
+		"templates/admin/unregistered_table.html",
+		"templates/admin/history_table.html")
 }
 
-type registration struct {
-	RowIndex   uint16
-	Locker     string
-	Name       string
-	Email      string
-	Expiry     string
-	ExpiryTime stdtime.Time
-	EmailSent  bool
-}
-
-func queryAllRegistrations() ([]registration, error) {
+func queryAll[T any](query string, scan func(*sql.Rows, uint16) (T, error)) ([]T, error) {
 	db, lock := database.Lock()
-	defer lock.Unlock()
 
-	stmt, err := db.Prepare(`
-        SELECT locker, user, name, expiry, expiryEmailSent
-        FROM registration
-		ORDER BY locker;`)
-
+	rows, err := db.Query(query)
+	lock.Unlock()
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
-	rows, err := stmt.Query()
-	if err != nil {
-		return nil, err
-	}
-
-	lockers := make([]registration, 0, 200)
+	results := make([]T, 0, 200)
 	rowIndex := uint16(1)
 
-	for ; rows.Next(); rowIndex++ {
-		reg := registration{
-			RowIndex: rowIndex,
-		}
-
-		err := rows.Scan(
-			&reg.Locker, &reg.Email, &reg.Name,
-			&reg.ExpiryTime, &reg.EmailSent)
-
+	for rows.Next() {
+		item, err := scan(rows, rowIndex)
 		if err != nil {
 			return nil, err
 		}
-
-		reg.Expiry = reg.ExpiryTime.Format(time.TimeFormatLayout)
-
-		lockers = append(lockers, reg)
+		results = append(results, item)
+		rowIndex++
 	}
 
-	return lockers, nil
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+func queryAllRegistrations() ([]locker_record, error) {
+	return queryAll(`
+		SELECT locker_id, user_email, user_name, expiry_date, expiry_email_sent
+		FROM locker_registrations
+		ORDER BY locker_id;`,
+		func(rows *sql.Rows, rowIndex uint16) (locker_record, error) {
+			reg := locker_record{RowIndex: rowIndex}
+			err := rows.Scan(
+				&reg.LockerId,
+				&reg.UserEmail,
+				&reg.UserName,
+				&reg.ExpiryDate,
+				&reg.ExpiryEmailSent,
+			)
+			if err != nil {
+				return reg, err
+			}
+			reg.Expiry = reg.ExpiryDate.Format(time.TimeFormatLayout)
+			return reg, nil
+		},
+	)
+}
+
+func queryAllLockers() ([]locker_record, error) {
+	return queryAll(`
+		SELECT id
+		FROM locker
+		ORDER BY id;`,
+		func(rows *sql.Rows, rowIndex uint16) (locker_record, error) {
+			l := locker_record{RowIndex: rowIndex}
+			err := rows.Scan(&l.LockerId)
+			return l, err
+		},
+	)
+}
+
+func queryAllLockerRemovals() ([]locker_record, error) {
+	return queryAll(`
+		SELECT locker_id, user_email, user_name, removed_date
+		FROM locker_removals
+		ORDER BY removed_date DESC;`,
+		func(rows *sql.Rows, rowIndex uint16) (locker_record, error) {
+			lr := locker_record{RowIndex: rowIndex}
+			err := rows.Scan(&lr.LockerId, &lr.UserEmail, &lr.UserName, &lr.RemovedDate)
+			if err != nil {
+				return lr, err
+			}
+			lr.Removed = lr.RemovedDate.Format(time.TimeFormatLayout)
+			return lr, nil
+		},
+	)
 }
 
 func formatTermName(t stdtime.Time) string {
 	year := t.Year()
 	month := t.Month()
+	yearStr := strconv.Itoa(year)
 
 	switch {
 	case month >= stdtime.September && month <= stdtime.December:
-		return "Fall " + stdtime.Date(year, 1, 1, 0, 0, 0, 0, t.Location()).Format("2006")
+		return "Fall " + yearStr
 	case month >= stdtime.January && month <= stdtime.April:
-		return "Spring " + stdtime.Date(year, 1, 1, 0, 0, 0, 0, t.Location()).Format("2006")
+		return "Spring " + yearStr
 	default:
-		return "Summer " + stdtime.Date(year, 1, 1, 0, 0, 0, 0, t.Location()).Format("2006")
+		return "Summer " + yearStr
 	}
+}
+
+// FilterUnregistered returns lockers present in allLockers but absent from registeredLockers
+func FilterUnregistered(allLockers, registeredLockers []locker_record) []locker_record {
+	excludeMap := make(map[string]struct{}, len(registeredLockers))
+
+	for _, reg := range registeredLockers {
+		excludeMap[normalizeLockerId(reg.LockerId)] = struct{}{}
+	}
+
+	unregistered := make([]locker_record, 0, len(allLockers))
+	var rowIndex uint16 = 1
+
+	for _, locker := range allLockers {
+		if _, excluded := excludeMap[normalizeLockerId(locker.LockerId)]; !excluded {
+			item := locker
+			item.RowIndex = rowIndex
+			unregistered = append(unregistered, item)
+			rowIndex++
+		}
+	}
+
+	return unregistered
+}
+
+func normalizeLockerId(lockerId string) string {
+	return lockerId
 }

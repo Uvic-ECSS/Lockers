@@ -13,9 +13,9 @@
     <tbody>
       {{range .Entries}}
       <tr>
-        <td>{{.Name}}</td>
-        <td>{{.Email}}</td>
-        <td class="whitespace-nowrap">{{.Removed.Format "Jan 2, 2006 at 3:04pm"}}</td>
+        <td>{{.UserName}}</td>
+        <td>{{.UserEmail}}</td>
+        <td class="whitespace-nowrap">{{.Removed}}</td>
       </tr>
       {{end}}
     </tbody>

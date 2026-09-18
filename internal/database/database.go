@@ -10,7 +10,7 @@ import (
 
 var (
 	db     *sql.DB
-	dbLock *sync.Mutex
+	dbLock sync.Mutex
 )
 
 func Connect(dbURL string) {
@@ -22,11 +22,9 @@ func Connect(dbURL string) {
 	}
 
 	logger.Info.Println("Connected to database")
-
-	dbLock = new(sync.Mutex)
 }
 
 func Lock() (*sql.DB, *sync.Mutex) {
 	dbLock.Lock()
-	return db, dbLock
+	return db, &dbLock
 }

@@ -40,8 +40,9 @@ func Registrations(w http.ResponseWriter, r *http.Request) {
 	defer tx.Rollback()
 
 	result, err := tx.ExecContext(ctx, `
-		INSERT INTO history (locker, user, name)
-		SELECT locker, user, name FROM registration WHERE locker = :locker;`,
+		INSERT INTO locker_removals (locker_id, user_email, user_name)
+		SELECT locker_id, user_email, user_name
+		FROM locker_registrations WHERE locker_id = :locker;`,
 		sql.Named("locker", locker))
 	if err != nil {
 		logger.Error.Println(err)
@@ -60,7 +61,7 @@ func Registrations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = tx.ExecContext(ctx, `DELETE FROM registration WHERE locker = :locker;`,
+	_, err = tx.ExecContext(ctx, `DELETE FROM locker_registrations WHERE locker_id = :locker;`,
 		sql.Named("locker", locker))
 	if err != nil {
 		logger.Error.Println(err)
@@ -79,9 +80,9 @@ func Registrations(w http.ResponseWriter, r *http.Request) {
 }
 
 type historyEntry struct {
-	Name    string
-	Email   string
-	Removed stdtime.Time
+	UserName  string
+	UserEmail string
+	Removed   string
 }
 
 func History(w http.ResponseWriter, r *http.Request) {
@@ -92,13 +93,13 @@ func History(w http.ResponseWriter, r *http.Request) {
 
 	locker := r.URL.Query().Get("locker")
 	db, lock := database.Lock()
-	defer lock.Unlock()
 
 	rows, err := db.Query(`
-		SELECT name, user, removed
-		FROM history
-		WHERE locker = :locker
-		ORDER BY removed DESC;`, sql.Named("locker", locker))
+		SELECT user_name, user_email, removed_date
+		FROM locker_removals
+		WHERE locker_id = :locker
+		ORDER BY removed_date DESC;`, sql.Named("locker", locker))
+	lock.Unlock()
 	if err != nil {
 		logger.Error.Println(err)
 		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
@@ -109,11 +110,13 @@ func History(w http.ResponseWriter, r *http.Request) {
 	entries := make([]historyEntry, 0)
 	for rows.Next() {
 		entry := historyEntry{}
-		if err := rows.Scan(&entry.Name, &entry.Email, &entry.Removed); err != nil {
+		var removed stdtime.Time
+		if err := rows.Scan(&entry.UserName, &entry.UserEmail, &removed); err != nil {
 			logger.Error.Println(err)
 			httputil.WriteResponse(w, http.StatusInternalServerError, nil)
 			return
 		}
+		entry.Removed = removed.Format("Jan 2, 2006 at 3:04pm")
 		entries = append(entries, entry)
 	}
 	if err := rows.Err(); err != nil {
@@ -125,5 +128,5 @@ func History(w http.ResponseWriter, r *http.Request) {
 	httputil.WriteTemplateComponent(w, struct {
 		Locker  string
 		Entries []historyEntry
-	}{locker, entries}, "templates/admin/historytable.html")
+	}{locker, entries}, "templates/admin/history_table.html")
 }

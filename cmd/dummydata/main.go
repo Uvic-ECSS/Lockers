@@ -62,7 +62,7 @@ func main() {
 		exp := time.NextExpiryDate(time.Now())
 
 		_, err := db.Exec(`
-            INSERT INTO registration (locker, user, name, expiry)
+			INSERT INTO locker_registrations (locker_id, user_email, user_name, expiry_date)
             VALUES (:locker, :user, :name, :expiry);`,
 			sql.Named("locker", locker),
 			sql.Named("user", user.Email),

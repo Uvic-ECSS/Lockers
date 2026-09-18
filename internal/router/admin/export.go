@@ -29,20 +29,20 @@ func Export(w http.ResponseWriter, r *http.Request) {
 	httputil.WriteResponse(w, http.StatusOK, toCSV(lockers))
 }
 
-func toCSV(lockers []registration) []byte {
+func toCSV(lockers []locker_record) []byte {
 	buf := make([]string, len(lockers)+1)
 	buf[0] = ",Locker,Name,Email,Expire On, Email Sent"
 
 	for i, locker := range lockers {
 		sent := "false"
-		if locker.EmailSent {
+		if locker.ExpiryEmailSent {
 			sent = "true"
 		}
 		buf[i+1] = fmt.Sprintf(
 			"%d,%s,%s,%s,%s,%s",
-			i+1, locker.Locker,
-			locker.Name, locker.Email,
-			locker.ExpiryTime.Format("2006-01-02 15:04:05 MST"),
+			i+1, locker.LockerId,
+			locker.UserName, locker.UserEmail,
+			locker.ExpiryDate.Format("2006-01-02 15:04:05 MST"),
 			sent)
 	}
 

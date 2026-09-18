@@ -17,7 +17,7 @@ import (
 
 type lockerState struct {
 	IsAvailable bool
-	LockerID    string
+	LockerId    string
 }
 
 type dashboardData struct {
@@ -60,9 +60,9 @@ func userDashboardData(userEmail string) (dashboardData, error) {
 	defer lock.Unlock()
 
 	stmt, err := db.Prepare(`
-        SELECT locker, expiry
-        FROM registration
-        WHERE user = :email
+		SELECT locker_id, expiry_date
+		FROM locker_registrations
+		WHERE user_email = :email
         LIMIT 1;`)
 	if err != nil {
 		return data, err
@@ -115,10 +115,10 @@ func ApiLocker(w http.ResponseWriter, r *http.Request) {
 	defer lock.Unlock()
 
 	stmt, err := db.Prepare(`
-        SELECT locker.id, registration.locker 
+		SELECT locker.id, locker_registrations.locker_id
         FROM locker
-        LEFT JOIN registration 
-        ON locker.id = registration.locker
+		LEFT JOIN locker_registrations
+		ON locker.id = locker_registrations.locker_id
         WHERE locker.id 
         LIKE ?;`)
 
@@ -138,11 +138,11 @@ func ApiLocker(w http.ResponseWriter, r *http.Request) {
 	lockers := []lockerState{}
 	for rows.Next() {
 		var (
-			lockerID       string
+			lockerId       string
 			registrationID sql.NullString
 		)
 
-		if err := rows.Scan(&lockerID, &registrationID); err != nil {
+		if err := rows.Scan(&lockerId, &registrationID); err != nil {
 			logger.Error.Printf("failed to scan data: %v\n", err)
 			httputil.WriteResponse(w, http.StatusInternalServerError, nil)
 			return
@@ -150,7 +150,7 @@ func ApiLocker(w http.ResponseWriter, r *http.Request) {
 
 		lockers = append(lockers, lockerState{
 			IsAvailable: !registrationID.Valid,
-			LockerID:    lockerID,
+			LockerId:    lockerId,
 		})
 	}
 
@@ -201,8 +201,8 @@ func DashLockerRegister(w http.ResponseWriter, r *http.Request) {
 
 	stmt, err = db.Prepare(`
         SELECT COUNT(*) 
-        FROM registration 
-        WHERE locker = :locker;`)
+		FROM locker_registrations
+		WHERE locker_id = :locker;`)
 
 	if err != nil {
 		logger.Error.Fatal(err)
@@ -223,8 +223,8 @@ func DashLockerRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	stmt, err = db.Prepare(`
-        INSERT INTO registration (locker, user, name, expiry)
-        VALUES (:locker, :user, :name, :expiry);`)
+		INSERT INTO locker_registrations (locker_id, user_email, user_name, expiry_date)
+		VALUES (:locker, :user, :name, :expiry);`)
 
 	if err != nil {
 		logger.Error.Fatal(err)
@@ -272,8 +272,9 @@ func DashDeregister(w http.ResponseWriter, r *http.Request) {
 	defer tx.Rollback()
 
 	result, err := tx.Exec(`
-		INSERT INTO history (locker, user, name)
-		SELECT locker, user, name FROM registration WHERE user = :email;`,
+		INSERT INTO locker_removals (locker_id, user_email, user_name)
+		SELECT locker_id, user_email, user_name
+		FROM locker_registrations WHERE user_email = :email;`,
 		sql.Named("email", userEmail))
 	if err != nil {
 		logger.Error.Printf("error recording deregistration history: %v\n", err)
@@ -292,7 +293,7 @@ func DashDeregister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = tx.Exec(`DELETE FROM registration WHERE user = :email`, sql.Named("email", userEmail))
+	_, err = tx.Exec(`DELETE FROM locker_registrations WHERE user_email = :email`, sql.Named("email", userEmail))
 	if err != nil {
 		logger.Error.Printf("error deregistering locker: %v\n", err)
 		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
@@ -348,7 +349,7 @@ func renewRegistration(userEmail string) error {
 	db, lock := database.Lock()
 	defer lock.Unlock()
 
-	sel, err := db.Prepare(`SELECT expiry FROM registration WHERE user = :email;`)
+	sel, err := db.Prepare(`SELECT expiry_date FROM locker_registrations WHERE user_email = :email;`)
 	if err != nil {
 		return err
 	}
@@ -363,9 +364,9 @@ func renewRegistration(userEmail string) error {
 	}
 
 	stmt, err := db.Prepare(`
-        UPDATE registration
-        SET expiry = :expiry, expiryEmailSent = FALSE
-        WHERE user = :email;`)
+		UPDATE locker_registrations
+		SET expiry_date = :expiry, expiry_email_sent = FALSE
+		WHERE user_email = :email;`)
 	if err != nil {
 		return err
 	}

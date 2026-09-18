@@ -1,0 +1,53 @@
+{{define "registered_table"}}
+{{if .HasRegistrations}}
+<div class="overflow-x-auto rounded-box border border-base-300 max-h-[65vh] overflow-y-auto">
+  <table class="table table-zebra table-pin-rows">
+    <thead>
+      <tr>
+        <th>Locker</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Expiry Date</th>
+        <th>Email Sent</th>
+        <th><span class="sr-only">Remove</span></th>
+        <th><span class="sr-only">History</span></th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {{range $reg := .RegisteredLockers}}
+      <tr>
+        <td class="font-medium">{{$reg.LockerId}}</td>
+        <td>{{$reg.UserName}}</td>
+        <td class="opacity-80">{{$reg.UserEmail}}</td>
+        <td class="whitespace-nowrap">{{$reg.Expiry}}</td>
+        <td class="whitespace-nowrap">{{if $reg.ExpiryEmailSent}}Yes{{else}}No{{end}}</td>
+        <td>
+          <button
+            class="btn btn-outline btn-error btn-xs"
+            type="button"
+            hx-delete="/admin/registration?locker={{$reg.LockerId | urlquery}}"
+            hx-confirm="Remove {{$reg.UserName}}'s registration for {{$reg.LockerId}}?"
+          >
+            remove
+          </button>
+        </td>
+        <td>
+          <button
+            class="btn btn-outline btn-primary btn-xs"
+            type="button"
+            data-history-button
+            hx-get="/admin/history?locker={{$reg.LockerId | urlquery}}"
+            hx-target="#history-modal-content"
+            hx-swap="innerHTML"
+          >
+            history
+          </button>
+        </td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}
+{{end}}
