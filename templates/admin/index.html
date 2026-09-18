@@ -1,12 +1,16 @@
 {{define "content"}}
-<main class="flex-1 w-full max-w-5xl mx-auto px-4 py-8 flex flex-col gap-6">
-  <h1 class="text-2xl text-center font-semibold">Lockers for {{.Term}}</h1>
+<main class="admin-page flex-1 w-full px-4 py-8 sm:px-6 lg:px-8 flex flex-col gap-6">
+  <div class="flex flex-col items-center gap-2 text-center">
+    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Admin dashboard</p>
+    <h1 class="text-2xl font-semibold sm:text-3xl">Lockers for {{.Term}}</h1>
+  </div>
 
-  <div class="tabs tabs-boxed self-center" role="tablist" aria-label="Locker lists">
-    <button class="tab tab-active" type="button" role="tab" aria-selected="true" data-admin-tab="registrations">
+  <div class="admin-tab-toggle" data-active-tab="registrations" role="tablist" aria-label="Locker lists">
+    <span class="admin-tab-thumb" aria-hidden="true"></span>
+    <button class="admin-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="registrations-panel" data-admin-tab="registrations">
       Registered
     </button>
-    <button class="tab" type="button" role="tab" aria-selected="false" data-admin-tab="unregistered">
+    <button class="admin-tab" type="button" role="tab" aria-selected="false" aria-controls="unregistered-panel" data-admin-tab="unregistered">
       Unregistered
     </button>
   </div>
@@ -15,9 +19,11 @@
     document.querySelectorAll("[data-admin-tab]").forEach(function (tab) {
       tab.addEventListener("click", function () {
         var selected = tab.dataset.adminTab;
+        var toggle = tab.closest("[data-active-tab]");
+        toggle.dataset.activeTab = selected;
         document.querySelectorAll("[data-admin-tab]").forEach(function (otherTab) {
           var active = otherTab === tab;
-          otherTab.classList.toggle("tab-active", active);
+          otherTab.classList.toggle("is-active", active);
           otherTab.setAttribute("aria-selected", active);
         });
         document.querySelectorAll("[data-admin-panel]").forEach(function (panel) {
@@ -48,11 +54,11 @@
     <form method="dialog" class="modal-backdrop"><button aria-label="Close">close</button></form>
   </dialog>
 
-  <div data-admin-panel="registrations">
+  <div id="registrations-panel" class="admin-tab-panel" data-admin-panel="registrations">
     {{if .HasRegistrations}}
     {{template "registered_table" .}}
 
-    <div class="flex justify-center">
+    <div class="mt-4 flex justify-center">
       <a href="/admin/registration/export" class="btn btn-primary" download>
         Export registrations (CSV)
       </a>
@@ -62,7 +68,7 @@
     {{end}}
   </div>
 
-  <div data-admin-panel="unregistered" hidden>
+  <div id="unregistered-panel" class="admin-tab-panel" data-admin-panel="unregistered" hidden>
     {{if .HasUnregisteredLockers}}
     {{template "unregistered_table" .}}
     {{else}}
