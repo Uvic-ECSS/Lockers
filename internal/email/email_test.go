@@ -3,7 +3,7 @@ package email_test
 import (
 	"testing"
 
-	"github.com/parsa222/ECSS-Lockers/internal/email"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/email"
 )
 
 func TestFormValidate(t *testing.T) {

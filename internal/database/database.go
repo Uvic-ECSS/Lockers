@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"sync"
 
-	"github.com/parsa222/ECSS-Lockers/internal/logger"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/logger"
 	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
 

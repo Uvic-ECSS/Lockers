@@ -5,7 +5,7 @@ import (
 
 	stdtime "time"
 
-	"github.com/parsa222/ECSS-Lockers/internal/time"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/time"
 )
 
 func makeDate(year int, month int, day int) stdtime.Time {

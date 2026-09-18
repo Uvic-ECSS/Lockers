@@ -6,9 +6,9 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/parsa222/ECSS-Lockers/internal/database"
-	"github.com/parsa222/ECSS-Lockers/internal/env"
-	"github.com/parsa222/ECSS-Lockers/internal/logger"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/database"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/env"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/logger"
 )
 
 func main() {

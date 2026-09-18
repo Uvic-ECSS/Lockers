@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/parsa222/ECSS-Lockers/internal/httputil"
-	"github.com/parsa222/ECSS-Lockers/internal/logger"
-	"github.com/parsa222/ECSS-Lockers/internal/time"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/httputil"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/logger"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/time"
 )
 
 func Export(w http.ResponseWriter, r *http.Request) {

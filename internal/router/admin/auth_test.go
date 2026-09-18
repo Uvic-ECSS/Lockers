@@ -4,8 +4,8 @@ import (
 	"encoding/binary"
 	"testing"
 
-	"github.com/parsa222/ECSS-Lockers/internal/crypto"
-	"github.com/parsa222/ECSS-Lockers/internal/time"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/crypto"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/time"
 	"github.com/stretchr/testify/assert"
 )
 

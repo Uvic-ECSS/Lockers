@@ -6,9 +6,9 @@ import (
 	"net/http"
 	stdtime "time"
 
-	"github.com/parsa222/ECSS-Lockers/internal/database"
-	"github.com/parsa222/ECSS-Lockers/internal/httputil"
-	"github.com/parsa222/ECSS-Lockers/internal/logger"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/database"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/httputil"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/logger"
 )
 
 func Registrations(w http.ResponseWriter, r *http.Request) {

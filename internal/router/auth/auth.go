@@ -5,13 +5,13 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/parsa222/ECSS-Lockers/internal"
-	"github.com/parsa222/ECSS-Lockers/internal/crypto"
-	"github.com/parsa222/ECSS-Lockers/internal/email"
-	"github.com/parsa222/ECSS-Lockers/internal/env"
-	"github.com/parsa222/ECSS-Lockers/internal/httputil"
-	"github.com/parsa222/ECSS-Lockers/internal/logger"
-	"github.com/parsa222/ECSS-Lockers/internal/time"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/crypto"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/email"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/env"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/httputil"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/logger"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/time"
 	"gopkg.in/gomail.v2"
 )
 

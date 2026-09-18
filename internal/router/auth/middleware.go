@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/parsa222/ECSS-Lockers/internal/crypto"
-	"github.com/parsa222/ECSS-Lockers/internal/httputil"
-	"github.com/parsa222/ECSS-Lockers/internal/logger"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/crypto"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/httputil"
+	"github.com/Uvic-ECSS/ECSS-Lockers/internal/logger"
 )
 
 func AuthenticatedUserOnly(next http.Handler) http.Handler {

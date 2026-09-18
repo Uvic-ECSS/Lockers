@@ -1,4 +1,4 @@
-module github.com/parsa222/ECSS-Lockers
+module github.com/Uvic-ECSS/ECSS-Lockers
 
 go 1.24.0
 
