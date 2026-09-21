@@ -4,8 +4,8 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/crypto"
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/time"
+	"github.com/Uvic-ECSS/Lockers/internal/crypto"
+	"github.com/Uvic-ECSS/Lockers/internal/time"
 )
 
 // AUTH TOKEN CONSTRUCTION

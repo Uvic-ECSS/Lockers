@@ -4,7 +4,7 @@ import (
 	"crypto/rand"
 	"testing"
 
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/crypto"
+	"github.com/Uvic-ECSS/Lockers/internal/crypto"
 )
 
 func makeBuffer(n int) []byte {

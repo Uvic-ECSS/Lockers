@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/crypto"
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/logger"
+	"github.com/Uvic-ECSS/Lockers/internal/crypto"
+	"github.com/Uvic-ECSS/Lockers/internal/logger"
 )
 
 type ContextString string

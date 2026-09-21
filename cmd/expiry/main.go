@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/joho/godotenv"
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/database"
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/email"
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/env"
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/logger"
+	"github.com/Uvic-ECSS/Lockers/internal/database"
+	"github.com/Uvic-ECSS/Lockers/internal/email"
+	"github.com/Uvic-ECSS/Lockers/internal/env"
+	"github.com/Uvic-ECSS/Lockers/internal/logger"
 )
 
 func init() {

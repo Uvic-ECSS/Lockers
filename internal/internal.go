@@ -3,7 +3,7 @@ package internal
 import (
 	"strconv"
 
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/env"
+	"github.com/Uvic-ECSS/Lockers/internal/env"
 )
 
 var (

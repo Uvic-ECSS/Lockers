@@ -9,10 +9,10 @@ import (
 
 	stdtime "time"
 
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/database"
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/httputil"
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/logger"
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/time"
+	"github.com/Uvic-ECSS/Lockers/internal/database"
+	"github.com/Uvic-ECSS/Lockers/internal/httputil"
+	"github.com/Uvic-ECSS/Lockers/internal/logger"
+	"github.com/Uvic-ECSS/Lockers/internal/time"
 )
 
 type lockerState struct {

@@ -3,9 +3,9 @@ package router
 import (
 	"net/http"
 
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal"
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/httputil"
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/logger"
+	"github.com/Uvic-ECSS/Lockers/internal"
+	"github.com/Uvic-ECSS/Lockers/internal/httputil"
+	"github.com/Uvic-ECSS/Lockers/internal/logger"
 )
 
 func Home(w http.ResponseWriter, r *http.Request) {

@@ -4,8 +4,8 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/env"
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/logger"
+	"github.com/Uvic-ECSS/Lockers/internal/env"
+	"github.com/Uvic-ECSS/Lockers/internal/logger"
 	"gopkg.in/gomail.v2"
 )
 

@@ -3,7 +3,7 @@ package time
 import (
 	stdtime "time"
 
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/logger"
+	"github.com/Uvic-ECSS/Lockers/internal/logger"
 )
 
 var loc *stdtime.Location

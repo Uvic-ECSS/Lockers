@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/crypto"
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/env"
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/httputil"
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/logger"
-	"github.com/Uvic-ECSS/ECSS-Lockers/internal/time"
+	"github.com/Uvic-ECSS/Lockers/internal/crypto"
+	"github.com/Uvic-ECSS/Lockers/internal/env"
+	"github.com/Uvic-ECSS/Lockers/internal/httputil"
+	"github.com/Uvic-ECSS/Lockers/internal/logger"
+	"github.com/Uvic-ECSS/Lockers/internal/time"
 )
 
 const (
