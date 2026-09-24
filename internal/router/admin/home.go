@@ -34,7 +34,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 		HasUnregisteredLockers bool
 		Term                   string
 	}{
-		Term: formatTermName(stdtime.Now()),
+		Term: formatTermName(time.Now()),
 	}
 
 	var err error
