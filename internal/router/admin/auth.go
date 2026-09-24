@@ -100,9 +100,12 @@ func AdminTokenChecker(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("admin_token")
 		if err != nil || !validToken(cookie.Value) {
+			if r.Header.Get("HX-Request") != "" {
+				w.Header().Set("HX-Redirect", "/auth/admin")
+				return
+			}
 			httputil.WriteTemplatePage(w,
 				struct{ IsAdmin bool }{IsAdmin: true},
-				"templates/base.html",
 				"templates/auth/session_expired.html",
 				"templates/nav.html")
 			return
