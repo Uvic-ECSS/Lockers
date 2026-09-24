@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"html"
 	"net/http"
 	"strings"
 
@@ -66,10 +67,10 @@ func AuthApiLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// response
-	html := fmt.Sprintf(`<span class="form-info">
+	resp := fmt.Sprintf(`<span class="form-info">
         Login link sent to %s!
-        </span>`, userEmail)
-	httputil.WriteResponse(w, http.StatusOK, []byte(html))
+        </span>`, html.EscapeString(userEmail))
+	httputil.WriteResponse(w, http.StatusOK, []byte(resp))
 }
 
 const emailtemplate string = `Hello!
