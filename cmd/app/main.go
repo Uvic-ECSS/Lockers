@@ -48,6 +48,10 @@ func main() {
 	app.Use(middleware.RealIP)
 	app.Use(requestLogger)
 	app.Use(middleware.Recoverer)
+	// will test later on another fly.io instance
+	if user, pass := env.Env("SITE_USER"), env.Env("SITE_PASSWORD"); user != "" && pass != "" {
+		app.Use(middleware.BasicAuth("Lockers staging", map[string]string{user: pass}))
+	}
 
 	app.Handle("/assets/*", cacheAssets(http.StripPrefix("/assets/", http.FileServer(http.Dir("assets")))))
 	app.Handle("/", http.HandlerFunc(router.Home))
