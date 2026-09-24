@@ -120,7 +120,7 @@ func queryAllRegistrations() ([]locker_record, error) {
 			if err != nil {
 				return reg, err
 			}
-			reg.Expiry = reg.ExpiryDate.Format(time.TimeFormatLayout)
+			reg.Expiry = time.Format(reg.ExpiryDate)
 			return reg, nil
 		},
 	)
@@ -150,7 +150,7 @@ func queryAllLockerRemovals() ([]locker_record, error) {
 			if err != nil {
 				return lr, err
 			}
-			lr.Removed = lr.RemovedDate.Format(time.TimeFormatLayout)
+			lr.Removed = time.Format(lr.RemovedDate)
 			return lr, nil
 		},
 	)

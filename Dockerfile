@@ -21,6 +21,6 @@ COPY /assets ./assets
 COPY --from=gobuild /locker/app ./
 COPY --from=nodebuild /locker/assets/css/index.css ./assets/css/index.css
 RUN apk add --no-cache tzdata
-ENV TZ=Canada/Pacific
+ENV TZ=America/Vancouver
 EXPOSE 8080
 CMD [ "./app" ]

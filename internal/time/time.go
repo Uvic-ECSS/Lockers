@@ -12,10 +12,14 @@ const TimeFormatLayout string = "Jan 2, 2006 at 3:04pm"
 
 func init() {
 	var err error
-	loc, err = stdtime.LoadLocation("Canada/Pacific")
+	loc, err = stdtime.LoadLocation("America/Vancouver")
 	if err != nil {
 		logger.Error.Fatal(err)
 	}
+}
+
+func Format(t stdtime.Time) string {
+	return t.In(loc).Format(TimeFormatLayout)
 }
 
 func GetCurrentTerm() stdtime.Time {

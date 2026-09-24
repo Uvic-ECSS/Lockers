@@ -9,6 +9,7 @@ import (
 	"github.com/Uvic-ECSS/Lockers/internal/database"
 	"github.com/Uvic-ECSS/Lockers/internal/httputil"
 	"github.com/Uvic-ECSS/Lockers/internal/logger"
+	"github.com/Uvic-ECSS/Lockers/internal/time"
 )
 
 func Registrations(w http.ResponseWriter, r *http.Request) {
@@ -116,7 +117,7 @@ func History(w http.ResponseWriter, r *http.Request) {
 			httputil.WriteResponse(w, http.StatusInternalServerError, nil)
 			return
 		}
-		entry.Removed = removed.Format("Jan 2, 2006 at 3:04pm")
+		entry.Removed = time.Format(removed)
 		entries = append(entries, entry)
 	}
 	if err := rows.Err(); err != nil {

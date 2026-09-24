@@ -79,7 +79,7 @@ func userDashboardData(userEmail string) (dashboardData, error) {
 	}
 
 	data.HasLocker = true
-	data.ExpireAt = expiry.Format(time.TimeFormatLayout)
+	data.ExpireAt = time.Format(expiry)
 	data.IsExpired = expiry.Before(time.Now())
 	return data, nil
 }

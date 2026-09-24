@@ -9,7 +9,7 @@ import (
 )
 
 func makeDate(year int, month int, day int) stdtime.Time {
-	loc, err := stdtime.LoadLocation("Canada/Pacific")
+	loc, err := stdtime.LoadLocation("America/Vancouver")
 	if err != nil {
 		panic(err)
 	}
@@ -67,6 +67,21 @@ func TestNow(t *testing.T) {
 			if timeEqual(expected, got) {
 				t.Fatalf("test failed:\n\texpected\t%v\n\tgot\t\t%v", expected, got)
 			}
+		}
+	}
+}
+
+func TestFormat(t *testing.T) {
+	cases := []struct {
+		in   stdtime.Time
+		want string
+	}{
+		{stdtime.Date(2026, 9, 23, 22, 0, 0, 0, stdtime.UTC), "Sep 23, 2026 at 3:00pm"},
+		{stdtime.Date(2026, 1, 16, 4, 30, 0, 0, stdtime.UTC), "Jan 15, 2026 at 8:30pm"},
+	}
+	for _, c := range cases {
+		if got := time.Format(c.in); got != c.want {
+			t.Errorf("Format(%v) = %q, want %q", c.in, got, c.want)
 		}
 	}
 }
