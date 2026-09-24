@@ -102,11 +102,11 @@ func seed(db *sql.DB) error {
 	}
 	defer stmt.Close()
 
-	for i := 1; i <= 200; i++ {
+	for i := 1; i <= 310; i++ {
 		if _, err := stmt.Exec(sql.Named("id", fmt.Sprintf("ELW %03d", i))); err != nil {
 			return err
 		}
 	}
-	logger.Info.Println("seeded 200 lockers.")
+	logger.Info.Println("seeded 310 lockers.")
 	return nil
 }
