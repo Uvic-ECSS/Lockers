@@ -15,6 +15,8 @@ import (
 	"github.com/Uvic-ECSS/Lockers/internal/time"
 )
 
+const invalidLocker = `<p class="text-error text-center">Invalid locker</p>`
+
 type lockerState struct {
 	IsAvailable bool
 	LockerId    string
@@ -107,7 +109,7 @@ func ApiLocker(w http.ResponseWriter, r *http.Request) {
 		httputil.WriteResponse(
 			w,
 			http.StatusOK,
-			[]byte("<p class=\"text-error text-center\">Invalid locker</p>"))
+			[]byte(invalidLocker))
 		return
 	}
 
@@ -206,9 +208,9 @@ func DashLockerRegister(w http.ResponseWriter, r *http.Request) {
 	var stmt *sql.Stmt
 
 	stmt, err = db.Prepare(`
-        SELECT COUNT(*) 
-		FROM locker_registrations
-		WHERE locker_id = :locker;`)
+		SELECT
+			EXISTS (SELECT 1 FROM lockers WHERE locker_id = :locker),
+			EXISTS (SELECT 1 FROM locker_registrations WHERE locker_id = :locker);`)
 
 	if err != nil {
 		logger.Error.Printf("error preparing locker check: %v\n", err)
@@ -217,16 +219,21 @@ func DashLockerRegister(w http.ResponseWriter, r *http.Request) {
 	}
 	defer stmt.Close()
 
-	var registrationCount uint8
+	var exists, taken bool
 
-	err = stmt.QueryRow(sql.Named("locker", locker)).Scan(&registrationCount)
+	err = stmt.QueryRow(sql.Named("locker", locker)).Scan(&exists, &taken)
 	if err != nil {
 		logger.Error.Printf("error querying for locker: %v\n", err)
 		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
 		return
 	}
 
-	if registrationCount != 0 {
+	if !exists {
+		httputil.WriteResponse(w, http.StatusOK, []byte(invalidLocker))
+		return
+	}
+
+	if taken {
 		httputil.WriteTemplateComponent(w, nil, "templates/dash/locker_unavailable.html")
 		return
 	}
