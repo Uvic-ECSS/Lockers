@@ -4,12 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/joho/godotenv"
 	"github.com/Uvic-ECSS/Lockers/internal/crypto"
 	"github.com/Uvic-ECSS/Lockers/internal/database"
 	"github.com/Uvic-ECSS/Lockers/internal/env"
 	"github.com/Uvic-ECSS/Lockers/internal/logger"
 	"github.com/Uvic-ECSS/Lockers/internal/time"
+	"github.com/joho/godotenv"
 )
 
 type User struct {

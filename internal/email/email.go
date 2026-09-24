@@ -3,9 +3,9 @@ package email
 import (
 	"strings"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/Uvic-ECSS/Lockers/internal/env"
 	"github.com/Uvic-ECSS/Lockers/internal/logger"
+	"github.com/go-playground/validator/v10"
 	"gopkg.in/gomail.v2"
 )
 

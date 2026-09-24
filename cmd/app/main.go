@@ -5,10 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fatih/color"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/joho/godotenv"
 	"github.com/Uvic-ECSS/Lockers/internal"
 	"github.com/Uvic-ECSS/Lockers/internal/crypto"
 	"github.com/Uvic-ECSS/Lockers/internal/database"
@@ -19,6 +15,10 @@ import (
 	"github.com/Uvic-ECSS/Lockers/internal/router/admin"
 	"github.com/Uvic-ECSS/Lockers/internal/router/auth"
 	"github.com/Uvic-ECSS/Lockers/internal/router/dash"
+	"github.com/fatih/color"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/joho/godotenv"
 )
 
 const addr string = ":8080"
