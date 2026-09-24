@@ -3,7 +3,7 @@ package time
 import (
 	stdtime "time"
 
-	"github.com/parsa222/ECSS-Lockers/internal/logger"
+	"github.com/Uvic-ECSS/Lockers/internal/logger"
 )
 
 var loc *stdtime.Location
@@ -12,10 +12,18 @@ const TimeFormatLayout string = "Jan 2, 2006 at 3:04pm"
 
 func init() {
 	var err error
-	loc, err = stdtime.LoadLocation("Canada/Pacific")
+	loc, err = stdtime.LoadLocation("America/Vancouver")
 	if err != nil {
 		logger.Error.Fatal(err)
 	}
+}
+
+func Format(t stdtime.Time) string {
+	return t.In(loc).Format(TimeFormatLayout)
+}
+
+func FormatSortable(t stdtime.Time) string {
+	return t.In(loc).Format("2006-01-02 15:04")
 }
 
 func GetCurrentTerm() stdtime.Time {

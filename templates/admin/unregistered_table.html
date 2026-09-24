@@ -1,0 +1,36 @@
+{{define "unregistered_table"}}
+<div
+  class="admin-table-frame overflow-x-auto rounded-box border border-base-300 max-h-[65vh] overflow-y-auto"
+>
+  <table class="admin-table table table-zebra table-pin-rows">
+    <thead>
+      <tr>
+        <th>Locker</th>
+        <th><span class="sr-only">History</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .UnregisteredLockers}}
+      <tr>
+        <td class="font-medium py-1 px-3">
+          {{.LockerId}}
+        </td>
+        <td class="pl-4">
+          <button
+            class="btn btn-outline btn-primary btn-xs"
+            type="button"
+            data-history-button
+            hx-get="/admin/history?locker={{.LockerId | urlquery}}"
+            hx-target="#history-modal-content"
+            hx-swap="innerHTML"
+          >
+            <span class="hidden sm:inline">History</span>
+            <span class="sm:hidden">View</span>
+          </button>
+        </td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}

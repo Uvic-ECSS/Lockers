@@ -1,17 +1,16 @@
 package email
 
 import (
-	"strings"
+	"regexp"
 
-	"github.com/go-playground/validator/v10"
-	"github.com/parsa222/ECSS-Lockers/internal/env"
-	"github.com/parsa222/ECSS-Lockers/internal/logger"
+	"github.com/Uvic-ECSS/Lockers/internal/env"
 	"gopkg.in/gomail.v2"
 )
 
 var (
 	mailDialier *gomail.Dialer
 	HostEmail   string
+	uvicEmail   = regexp.MustCompile(`(?i)^[a-z0-9._-]{1,64}@uvic\.ca$`)
 )
 
 func Initialize() {
@@ -33,10 +32,5 @@ func Send(messages ...*gomail.Message) error {
 }
 
 func ValidUVicEmail(email string) bool {
-	err := validator.New().Var(email, "email")
-	if err == nil {
-		return strings.HasSuffix(email, "@uvic.ca")
-	}
-	logger.Error.Printf("Invalid email %s:\n%v\n", email, err)
-	return false
+	return uvicEmail.MatchString(email)
 }

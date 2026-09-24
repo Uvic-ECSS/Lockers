@@ -11,10 +11,10 @@
         {{end}}
       </svg>
 
-      <p class="font-semibold text-sm">{{$locker.LockerID}}</p>
+      <p class="font-semibold text-sm">{{$locker.LockerId}}</p>
 
       {{if $locker.IsAvailable}}
-      <a href="/dash/locker/register?locker={{$locker.LockerID}}" class="btn btn-primary btn-xs btn-block">Register</a>
+      <a href="/dash/locker/register?locker={{$locker.LockerId}}" class="btn btn-primary btn-xs btn-block">Register</a>
       {{else}}
       <span class="text-xs italic opacity-70">Taken</span>
       {{end}}

@@ -4,7 +4,7 @@ import (
 	"crypto/rand"
 	"fmt"
 
-	"github.com/parsa222/ECSS-Lockers/internal/crypto"
+	"github.com/Uvic-ECSS/Lockers/internal/crypto"
 )
 
 func main() {

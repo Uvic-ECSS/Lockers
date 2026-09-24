@@ -60,4 +60,10 @@ Note: for auth cookie to work, go on your browser `http://127.0.0.1:8080`
 - `DATABASE_AUTH_TOKEN`: Tursor database auth token
 - `ADMIN_USERNAME`: Admin username
 - `ADMIN_PASSWORD`: Admin password
-- `DEBUG`: Set to `true` for local development. Enables the `test` login shortcut (type `test` as the netlinkid to sign in as `test@uvic.ca` without email)
+
+#### Optional ( debug / staging )
+
+- `DEBUG`: Set to `true` for local development. 
+  - Enables the `test` login shortcut (type `test` as the netlinkid to sign in as `test@uvic.ca` without email verification)
+- `SITE_USER` + `SITE_PASSWORD`:  When both are set, the whole site asks for this username and password first. 
+  - used in the staging/dev server, NOT in production

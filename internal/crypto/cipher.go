@@ -6,8 +6,8 @@ import (
 	"encoding/base64"
 	"errors"
 
-	"github.com/parsa222/ECSS-Lockers/internal/env"
-	"github.com/parsa222/ECSS-Lockers/internal/logger"
+	"github.com/Uvic-ECSS/Lockers/internal/env"
+	"github.com/Uvic-ECSS/Lockers/internal/logger"
 	"golang.org/x/crypto/chacha20poly1305"
 	"lukechampine.com/blake3"
 )

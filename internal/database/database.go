@@ -4,13 +4,13 @@ import (
 	"database/sql"
 	"sync"
 
-	"github.com/parsa222/ECSS-Lockers/internal/logger"
+	"github.com/Uvic-ECSS/Lockers/internal/logger"
 	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
 
 var (
 	db     *sql.DB
-	dbLock *sync.Mutex
+	dbLock sync.Mutex
 )
 
 func Connect(dbURL string) {
@@ -22,11 +22,9 @@ func Connect(dbURL string) {
 	}
 
 	logger.Info.Println("Connected to database")
-
-	dbLock = new(sync.Mutex)
 }
 
 func Lock() (*sql.DB, *sync.Mutex) {
 	dbLock.Lock()
-	return db, dbLock
+	return db, &dbLock
 }

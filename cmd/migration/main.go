@@ -5,11 +5,27 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Uvic-ECSS/Lockers/internal/database"
+	"github.com/Uvic-ECSS/Lockers/internal/env"
+	"github.com/Uvic-ECSS/Lockers/internal/logger"
 	"github.com/joho/godotenv"
-	"github.com/parsa222/ECSS-Lockers/internal/database"
-	"github.com/parsa222/ECSS-Lockers/internal/env"
-	"github.com/parsa222/ECSS-Lockers/internal/logger"
 )
+
+var moves = []struct{ table, copy, backup string }{
+	{
+		"locker",
+		`INSERT OR IGNORE INTO lockers (locker_id)
+		SELECT id FROM locker WHERE id IS NOT NULL AND id <> '';`,
+		`ALTER TABLE locker RENAME TO locker_backup;`,
+	},
+	{
+		"registration",
+		`INSERT OR IGNORE INTO locker_registrations
+			(locker_id, user_email, user_name, expiry_date, expiry_email_sent)
+		SELECT locker, user, name, expiry, expiryEmailSent FROM registration;`,
+		`ALTER TABLE registration RENAME TO registration_backup;`,
+	},
+}
 
 func main() {
 	if err := godotenv.Load(); err != nil {
@@ -26,34 +42,71 @@ func main() {
 	db, lock := database.Lock()
 	defer lock.Unlock()
 
-	schema, err := os.ReadFile("internal/database/schema.sql")
-	if err != nil {
+	if err := migrate(db); err != nil {
 		logger.Error.Fatal(err)
 	}
 
-	if _, err := db.Exec(string(schema)); err != nil {
+	if err := seed(db); err != nil {
 		logger.Error.Fatal(err)
-	}
-
-	logger.Info.Println("created schema.")
-
-	logger.Info.Println("seeding 200 lockers..")
-	// eeehhh i'm not proud of how this is being done but
-	// database/sql does not support array type for query
-	// arg out of the box :(
-	for i := 0; i < 200; i++ {
-		locker := fmt.Sprintf("ELW %03d", i+1)
-
-		stmt, err := db.Prepare(`INSERT INTO locker (id) VALUES (:id);`)
-		if err != nil {
-			logger.Error.Fatal(err)
-		}
-
-		_, err = stmt.Exec(sql.Named("id", locker))
-		if err != nil {
-			logger.Error.Printf("error seeding locker %s:\n%v", locker, err)
-		}
 	}
 
 	logger.Info.Println("Done")
+}
+
+// all or nothing....
+func migrate(db *sql.DB) error {
+	schema, err := os.ReadFile("internal/database/schema.sql")
+	if err != nil {
+		return err
+	}
+
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	if _, err := tx.Exec(string(schema)); err != nil {
+		return err
+	}
+	logger.Info.Println("created schema.")
+
+	for _, m := range moves {
+		var exists bool
+		err := tx.QueryRow(
+			`SELECT EXISTS (SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?);`,
+			m.table).Scan(&exists)
+		if err != nil {
+			return err
+		}
+		if !exists {
+			continue
+		}
+
+		if _, err := tx.Exec(m.copy); err != nil {
+			return err
+		}
+		if _, err := tx.Exec(m.backup); err != nil {
+			return err
+		}
+		logger.Info.Printf("migrated %s, old table kept as %s_backup\n", m.table, m.table)
+	}
+
+	return tx.Commit()
+}
+
+func seed(db *sql.DB) error {
+	stmt, err := db.Prepare(`INSERT OR IGNORE INTO lockers (locker_id) VALUES (:id);`)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	for i := 1; i <= 310; i++ {
+		if _, err := stmt.Exec(sql.Named("id", fmt.Sprintf("ELW %03d", i))); err != nil {
+			return err
+		}
+	}
+	logger.Info.Println("seeded 310 lockers.")
+	return nil
 }

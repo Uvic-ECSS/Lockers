@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/parsa222/ECSS-Lockers/internal/crypto"
-	"github.com/parsa222/ECSS-Lockers/internal/env"
-	"github.com/parsa222/ECSS-Lockers/internal/httputil"
-	"github.com/parsa222/ECSS-Lockers/internal/logger"
-	"github.com/parsa222/ECSS-Lockers/internal/time"
+	"github.com/Uvic-ECSS/Lockers/internal/crypto"
+	"github.com/Uvic-ECSS/Lockers/internal/env"
+	"github.com/Uvic-ECSS/Lockers/internal/httputil"
+	"github.com/Uvic-ECSS/Lockers/internal/logger"
+	"github.com/Uvic-ECSS/Lockers/internal/time"
 )
 
 const (
@@ -100,9 +100,12 @@ func AdminTokenChecker(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("admin_token")
 		if err != nil || !validToken(cookie.Value) {
+			if r.Header.Get("HX-Request") != "" {
+				w.Header().Set("HX-Redirect", "/auth/admin")
+				return
+			}
 			httputil.WriteTemplatePage(w,
 				struct{ IsAdmin bool }{IsAdmin: true},
-				"templates/base.html",
 				"templates/auth/session_expired.html",
 				"templates/nav.html")
 			return

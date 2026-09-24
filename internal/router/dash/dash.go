@@ -9,15 +9,17 @@ import (
 
 	stdtime "time"
 
-	"github.com/parsa222/ECSS-Lockers/internal/database"
-	"github.com/parsa222/ECSS-Lockers/internal/httputil"
-	"github.com/parsa222/ECSS-Lockers/internal/logger"
-	"github.com/parsa222/ECSS-Lockers/internal/time"
+	"github.com/Uvic-ECSS/Lockers/internal/database"
+	"github.com/Uvic-ECSS/Lockers/internal/httputil"
+	"github.com/Uvic-ECSS/Lockers/internal/logger"
+	"github.com/Uvic-ECSS/Lockers/internal/time"
 )
+
+const invalidLocker = `<p class="text-error text-center">Invalid locker</p>`
 
 type lockerState struct {
 	IsAvailable bool
-	LockerID    string
+	LockerId    string
 }
 
 type dashboardData struct {
@@ -60,9 +62,9 @@ func userDashboardData(userEmail string) (dashboardData, error) {
 	defer lock.Unlock()
 
 	stmt, err := db.Prepare(`
-        SELECT locker, expiry
-        FROM registration
-        WHERE user = :email
+		SELECT locker_id, expiry_date
+		FROM locker_registrations
+		WHERE user_email = :email
         LIMIT 1;`)
 	if err != nil {
 		return data, err
@@ -79,7 +81,7 @@ func userDashboardData(userEmail string) (dashboardData, error) {
 	}
 
 	data.HasLocker = true
-	data.ExpireAt = expiry.Format(time.TimeFormatLayout)
+	data.ExpireAt = time.Format(expiry)
 	data.IsExpired = expiry.Before(time.Now())
 	return data, nil
 }
@@ -107,7 +109,7 @@ func ApiLocker(w http.ResponseWriter, r *http.Request) {
 		httputil.WriteResponse(
 			w,
 			http.StatusOK,
-			[]byte("<p class=\"text-error text-center\">Invalid locker</p>"))
+			[]byte(invalidLocker))
 		return
 	}
 
@@ -115,16 +117,19 @@ func ApiLocker(w http.ResponseWriter, r *http.Request) {
 	defer lock.Unlock()
 
 	stmt, err := db.Prepare(`
-        SELECT locker.id, registration.locker 
-        FROM locker
-        LEFT JOIN registration 
-        ON locker.id = registration.locker
-        WHERE locker.id 
-        LIKE ?;`)
+		SELECT lockers.locker_id, locker_registrations.locker_id
+		FROM lockers
+		LEFT JOIN locker_registrations
+			ON lockers.locker_id = locker_registrations.locker_id
+			WHERE lockers.locker_id LIKE ?
+		;`)
 
 	if err != nil {
-		logger.Error.Fatal("stmt error:", err)
+		logger.Error.Printf("error preparing locker search: %v\n", err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
 	}
+	defer stmt.Close()
 
 	//locker = fmt.Sprintf("%%ELW %d%%", lockerNum)
 	locker = fmt.Sprintf("%%%d%%", lockerNum)
@@ -132,17 +137,20 @@ func ApiLocker(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := stmt.Query(locker)
 	if err != nil {
-		panic(err)
+		logger.Error.Printf("error searching lockers: %v\n", err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
 	}
+	defer rows.Close()
 
 	lockers := []lockerState{}
 	for rows.Next() {
 		var (
-			lockerID       string
+			lockerId       string
 			registrationID sql.NullString
 		)
 
-		if err := rows.Scan(&lockerID, &registrationID); err != nil {
+		if err := rows.Scan(&lockerId, &registrationID); err != nil {
 			logger.Error.Printf("failed to scan data: %v\n", err)
 			httputil.WriteResponse(w, http.StatusInternalServerError, nil)
 			return
@@ -150,7 +158,7 @@ func ApiLocker(w http.ResponseWriter, r *http.Request) {
 
 		lockers = append(lockers, lockerState{
 			IsAvailable: !registrationID.Valid,
-			LockerID:    lockerID,
+			LockerId:    lockerId,
 		})
 	}
 
@@ -200,35 +208,46 @@ func DashLockerRegister(w http.ResponseWriter, r *http.Request) {
 	var stmt *sql.Stmt
 
 	stmt, err = db.Prepare(`
-        SELECT COUNT(*) 
-        FROM registration 
-        WHERE locker = :locker;`)
+		SELECT
+			EXISTS (SELECT 1 FROM lockers WHERE locker_id = :locker),
+			EXISTS (SELECT 1 FROM locker_registrations WHERE locker_id = :locker);`)
 
 	if err != nil {
-		logger.Error.Fatal(err)
+		logger.Error.Printf("error preparing locker check: %v\n", err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
 	}
+	defer stmt.Close()
 
-	var registrationCount uint8
+	var exists, taken bool
 
-	err = stmt.QueryRow(sql.Named("locker", locker)).Scan(&registrationCount)
+	err = stmt.QueryRow(sql.Named("locker", locker)).Scan(&exists, &taken)
 	if err != nil {
 		logger.Error.Printf("error querying for locker: %v\n", err)
 		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
 		return
 	}
 
-	if registrationCount != 0 {
+	if !exists {
+		httputil.WriteResponse(w, http.StatusOK, []byte(invalidLocker))
+		return
+	}
+
+	if taken {
 		httputil.WriteTemplateComponent(w, nil, "templates/dash/locker_unavailable.html")
 		return
 	}
 
 	stmt, err = db.Prepare(`
-        INSERT INTO registration (locker, user, name, expiry)
-        VALUES (:locker, :user, :name, :expiry);`)
+		INSERT INTO locker_registrations (locker_id, user_email, user_name, expiry_date)
+		VALUES (:locker, :user, :name, :expiry);`)
 
 	if err != nil {
-		logger.Error.Fatal(err)
+		logger.Error.Printf("error preparing registration: %v\n", err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
 	}
+	defer stmt.Close()
 
 	expiryDate := time.NextExpiryDate(time.Now())
 
@@ -263,17 +282,45 @@ func DashDeregister(w http.ResponseWriter, r *http.Request) {
 	db, lock := database.Lock()
 	defer lock.Unlock()
 
-	stmt, err := db.Prepare(`DELETE FROM registration WHERE user = :email`)
+	tx, err := db.Begin()
 	if err != nil {
-		logger.Error.Printf("failed to prepare delete statement: %v\n", err)
+		logger.Error.Printf("failed to begin deregistration transaction: %v\n", err)
 		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
 		return
 	}
-	defer stmt.Close()
+	defer tx.Rollback()
 
-	_, err = stmt.Exec(sql.Named("email", userEmail))
+	result, err := tx.Exec(`
+		INSERT INTO locker_removals (locker_id, user_email, user_name)
+		SELECT locker_id, user_email, user_name
+		FROM locker_registrations WHERE user_email = :email;`,
+		sql.Named("email", userEmail))
+	if err != nil {
+		logger.Error.Printf("error recording deregistration history: %v\n", err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		logger.Error.Printf("error checking deregistration history: %v\n", err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
+	}
+	if rowsAffected == 0 {
+		w.Header().Set("HX-Redirect", "/dash")
+		return
+	}
+
+	_, err = tx.Exec(`DELETE FROM locker_registrations WHERE user_email = :email`, sql.Named("email", userEmail))
 	if err != nil {
 		logger.Error.Printf("error deregistering locker: %v\n", err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
+	}
+
+	if err = tx.Commit(); err != nil {
+		logger.Error.Printf("error committing deregistration: %v\n", err)
 		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
 		return
 	}
@@ -321,7 +368,7 @@ func renewRegistration(userEmail string) error {
 	db, lock := database.Lock()
 	defer lock.Unlock()
 
-	sel, err := db.Prepare(`SELECT expiry FROM registration WHERE user = :email;`)
+	sel, err := db.Prepare(`SELECT expiry_date FROM locker_registrations WHERE user_email = :email;`)
 	if err != nil {
 		return err
 	}
@@ -336,9 +383,9 @@ func renewRegistration(userEmail string) error {
 	}
 
 	stmt, err := db.Prepare(`
-        UPDATE registration
-        SET expiry = :expiry, expiryEmailSent = FALSE
-        WHERE user = :email;`)
+		UPDATE locker_registrations
+		SET expiry_date = :expiry, expiry_email_sent = FALSE
+		WHERE user_email = :email;`)
 	if err != nil {
 		return err
 	}

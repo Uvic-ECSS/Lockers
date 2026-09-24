@@ -2,10 +2,12 @@ package admin
 
 import (
 	"encoding/binary"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
-	"github.com/parsa222/ECSS-Lockers/internal/crypto"
-	"github.com/parsa222/ECSS-Lockers/internal/time"
+	"github.com/Uvic-ECSS/Lockers/internal/crypto"
+	"github.com/Uvic-ECSS/Lockers/internal/time"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,4 +32,19 @@ func TestAdminToken(t *testing.T) {
 	ct, err := crypto.Encrypt(crypto.CipherKey[:], old, []byte(adminUsername))
 	assert.Nil(t, err)
 	assert.False(t, validToken(crypto.Base64.EncodeToString(ct)))
+}
+
+func TestAdminTokenCheckerHtmxRedirect(t *testing.T) {
+	called := false
+	h := AdminTokenChecker(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called = true
+	}))
+
+	req := httptest.NewRequest(http.MethodGet, "/admin/history", nil)
+	req.Header.Set("HX-Request", "true")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+
+	assert.False(t, called, "handler ran without a valid session")
+	assert.Equal(t, "/auth/admin", rec.Header().Get("HX-Redirect"))
 }

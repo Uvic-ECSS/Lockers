@@ -5,20 +5,20 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Uvic-ECSS/Lockers/internal"
+	"github.com/Uvic-ECSS/Lockers/internal/crypto"
+	"github.com/Uvic-ECSS/Lockers/internal/database"
+	"github.com/Uvic-ECSS/Lockers/internal/email"
+	"github.com/Uvic-ECSS/Lockers/internal/env"
+	"github.com/Uvic-ECSS/Lockers/internal/logger"
+	"github.com/Uvic-ECSS/Lockers/internal/router"
+	"github.com/Uvic-ECSS/Lockers/internal/router/admin"
+	"github.com/Uvic-ECSS/Lockers/internal/router/auth"
+	"github.com/Uvic-ECSS/Lockers/internal/router/dash"
 	"github.com/fatih/color"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
-	"github.com/parsa222/ECSS-Lockers/internal"
-	"github.com/parsa222/ECSS-Lockers/internal/crypto"
-	"github.com/parsa222/ECSS-Lockers/internal/database"
-	"github.com/parsa222/ECSS-Lockers/internal/email"
-	"github.com/parsa222/ECSS-Lockers/internal/env"
-	"github.com/parsa222/ECSS-Lockers/internal/logger"
-	"github.com/parsa222/ECSS-Lockers/internal/router"
-	"github.com/parsa222/ECSS-Lockers/internal/router/admin"
-	"github.com/parsa222/ECSS-Lockers/internal/router/auth"
-	"github.com/parsa222/ECSS-Lockers/internal/router/dash"
 )
 
 const addr string = ":8080"
@@ -48,6 +48,10 @@ func main() {
 	app.Use(middleware.RealIP)
 	app.Use(requestLogger)
 	app.Use(middleware.Recoverer)
+	// will test later on another fly.io instance
+	if user, pass := env.Env("SITE_USER"), env.Env("SITE_PASSWORD"); user != "" && pass != "" {
+		app.Use(middleware.BasicAuth("Lockers staging", map[string]string{user: pass}))
+	}
 
 	app.Handle("/assets/*", cacheAssets(http.StripPrefix("/assets/", http.FileServer(http.Dir("assets")))))
 	app.Handle("/", http.HandlerFunc(router.Home))
@@ -75,6 +79,7 @@ func main() {
 		r.Use(admin.AdminTokenChecker)
 		r.Get("/", admin.Home)
 		r.Delete("/registration", admin.Registrations)
+		r.Get("/history", admin.History)
 		r.Get("/registration/export", admin.Export)
 	})
 

@@ -2,16 +2,17 @@ package auth
 
 import (
 	"fmt"
+	"html"
 	"net/http"
 	"strings"
 
-	"github.com/parsa222/ECSS-Lockers/internal"
-	"github.com/parsa222/ECSS-Lockers/internal/crypto"
-	"github.com/parsa222/ECSS-Lockers/internal/email"
-	"github.com/parsa222/ECSS-Lockers/internal/env"
-	"github.com/parsa222/ECSS-Lockers/internal/httputil"
-	"github.com/parsa222/ECSS-Lockers/internal/logger"
-	"github.com/parsa222/ECSS-Lockers/internal/time"
+	"github.com/Uvic-ECSS/Lockers/internal"
+	"github.com/Uvic-ECSS/Lockers/internal/crypto"
+	"github.com/Uvic-ECSS/Lockers/internal/email"
+	"github.com/Uvic-ECSS/Lockers/internal/env"
+	"github.com/Uvic-ECSS/Lockers/internal/httputil"
+	"github.com/Uvic-ECSS/Lockers/internal/logger"
+	"github.com/Uvic-ECSS/Lockers/internal/time"
 	"gopkg.in/gomail.v2"
 )
 
@@ -19,6 +20,11 @@ const (
 	tokenExpireLimit    uint64 = 900
 	sessionCookieMaxAge int    = 3600
 )
+
+const sendFailed = `
+            <button type="submit" class="btn btn-primary btn-lg rounded-full btn-block">Send login link</button>
+            <div class="form-error">Could not send the login link. Try again.</div>
+            `
 
 func AuthApiLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -50,7 +56,9 @@ func AuthApiLogin(w http.ResponseWriter, r *http.Request) {
 	// make email token
 	tok, err := MakeTokenFromEmail(userEmail)
 	if err != nil {
-		panic(err)
+		logger.Error.Printf("error making login token: %v\n", err)
+		httputil.WriteResponse(w, http.StatusOK, []byte(sendFailed))
+		return
 	}
 
 	msg := gomail.NewMessage()
@@ -62,14 +70,16 @@ func AuthApiLogin(w http.ResponseWriter, r *http.Request) {
 		env.Env("SUPPORT_EMAIL")))
 
 	if err := email.Send(msg); err != nil {
-		panic(err)
+		logger.Error.Printf("error sending login email: %v\n", err)
+		httputil.WriteResponse(w, http.StatusOK, []byte(sendFailed))
+		return
 	}
 
 	// response
-	html := fmt.Sprintf(`<span class="form-info">
+	resp := fmt.Sprintf(`<span class="form-info">
         Login link sent to %s!
-        </span>`, userEmail)
-	httputil.WriteResponse(w, http.StatusOK, []byte(html))
+        </span>`, html.EscapeString(userEmail))
+	httputil.WriteResponse(w, http.StatusOK, []byte(resp))
 }
 
 const emailtemplate string = `Hello!

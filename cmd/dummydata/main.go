@@ -4,12 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/Uvic-ECSS/Lockers/internal/crypto"
+	"github.com/Uvic-ECSS/Lockers/internal/database"
+	"github.com/Uvic-ECSS/Lockers/internal/env"
+	"github.com/Uvic-ECSS/Lockers/internal/logger"
+	"github.com/Uvic-ECSS/Lockers/internal/time"
 	"github.com/joho/godotenv"
-	"github.com/parsa222/ECSS-Lockers/internal/crypto"
-	"github.com/parsa222/ECSS-Lockers/internal/database"
-	"github.com/parsa222/ECSS-Lockers/internal/env"
-	"github.com/parsa222/ECSS-Lockers/internal/logger"
-	"github.com/parsa222/ECSS-Lockers/internal/time"
 )
 
 type User struct {
@@ -62,7 +62,7 @@ func main() {
 		exp := time.NextExpiryDate(time.Now())
 
 		_, err := db.Exec(`
-            INSERT INTO registration (locker, user, name, expiry)
+			INSERT INTO locker_registrations (locker_id, user_email, user_name, expiry_date)
             VALUES (:locker, :user, :name, :expiry);`,
 			sql.Named("locker", locker),
 			sql.Named("user", user.Email),

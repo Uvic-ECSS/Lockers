@@ -31,6 +31,78 @@ main {
   @apply mx-auto max-w-screen-md;
 }
 
+.admin-page {
+  max-width: none;
+}
+
+.admin-table-frame {
+  width: fit-content;
+  min-width: min(100%, 22rem);
+  max-width: 100%;
+  margin-inline: auto;
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--color-base-content) 5%, transparent);
+}
+
+.admin-table {
+  width: max-content;
+  margin-inline: auto;
+  white-space: nowrap;
+}
+
+.admin-tab-toggle {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-inline: auto;
+  width: min(100%, 22rem);
+  padding: 0.25rem;
+  border: 1px solid color-mix(in srgb, var(--color-base-content) 14%, transparent);
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--color-base-200) 86%, var(--color-base-content));
+  isolation: isolate;
+}
+
+.admin-tab-thumb {
+  position: absolute;
+  z-index: -1;
+  inset: 0.25rem auto 0.25rem 0.25rem;
+  width: calc(50% - 0.25rem);
+  border-radius: 9999px;
+  background: var(--color-primary);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 30%, transparent);
+  transition: transform 220ms ease;
+}
+
+.admin-tab-toggle[data-active-tab="unregistered"] .admin-tab-thumb {
+  transform: translateX(100%);
+}
+
+.admin-tab {
+  z-index: 1;
+  min-height: 2.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  color: color-mix(in srgb, var(--color-base-content) 70%, transparent);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: color 180ms ease;
+}
+
+.admin-tab.is-active {
+  color: var(--color-primary-content);
+}
+
+.admin-tab-panel[hidden] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-tab-thumb,
+  .admin-tab {
+    transition: none;
+  }
+}
+
 /* theme toggle: show the icon for the action the click performs */
 .theme-sun {
   display: none;
