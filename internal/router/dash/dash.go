@@ -301,7 +301,7 @@ func DashDeregister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if rowsAffected == 0 {
-		httputil.WriteResponse(w, http.StatusNotFound, nil)
+		w.Header().Set("HX-Redirect", "/dash")
 		return
 	}
 
