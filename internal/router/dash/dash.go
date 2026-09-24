@@ -123,8 +123,11 @@ func ApiLocker(w http.ResponseWriter, r *http.Request) {
 		;`)
 
 	if err != nil {
-		logger.Error.Fatal("stmt error:", err)
+		logger.Error.Printf("error preparing locker search: %v\n", err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
 	}
+	defer stmt.Close()
 
 	//locker = fmt.Sprintf("%%ELW %d%%", lockerNum)
 	locker = fmt.Sprintf("%%%d%%", lockerNum)
@@ -132,8 +135,11 @@ func ApiLocker(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := stmt.Query(locker)
 	if err != nil {
-		panic(err)
+		logger.Error.Printf("error searching lockers: %v\n", err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
 	}
+	defer rows.Close()
 
 	lockers := []lockerState{}
 	for rows.Next() {
@@ -205,8 +211,11 @@ func DashLockerRegister(w http.ResponseWriter, r *http.Request) {
 		WHERE locker_id = :locker;`)
 
 	if err != nil {
-		logger.Error.Fatal(err)
+		logger.Error.Printf("error preparing locker check: %v\n", err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
 	}
+	defer stmt.Close()
 
 	var registrationCount uint8
 
@@ -227,8 +236,11 @@ func DashLockerRegister(w http.ResponseWriter, r *http.Request) {
 		VALUES (:locker, :user, :name, :expiry);`)
 
 	if err != nil {
-		logger.Error.Fatal(err)
+		logger.Error.Printf("error preparing registration: %v\n", err)
+		httputil.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
 	}
+	defer stmt.Close()
 
 	expiryDate := time.NextExpiryDate(time.Now())
 

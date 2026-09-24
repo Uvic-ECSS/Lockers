@@ -3,6 +3,7 @@ package httputil
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"html/template"
 	"net/http"
 	"os"
@@ -82,17 +83,11 @@ func WriteResponse(w http.ResponseWriter, status int, writeData []byte) {
 	}
 }
 
-func ExtractUserID(r *http.Request) string {
-	sessionID, ok := r.Context().Value(SessionID).(string)
-	if !ok {
-		logger.Error.Fatal("ExtractUserID called from an unprotected route")
-	}
-
-	return sessionID
-}
-
 func ExtractUserEmail(r *http.Request) (string, error) {
-	session := ExtractUserID(r)
+	session, ok := r.Context().Value(SessionID).(string)
+	if !ok {
+		return "", errors.New("no session on this route")
+	}
 
 	sessionID, err := crypto.Base64.DecodeString(session)
 	if err != nil {

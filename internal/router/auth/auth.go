@@ -21,6 +21,11 @@ const (
 	sessionCookieMaxAge int    = 3600
 )
 
+const sendFailed = `
+            <button type="submit" class="btn btn-primary btn-lg rounded-full btn-block">Send login link</button>
+            <div class="form-error">Could not send the login link. Try again.</div>
+            `
+
 func AuthApiLogin(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -51,7 +56,9 @@ func AuthApiLogin(w http.ResponseWriter, r *http.Request) {
 	// make email token
 	tok, err := MakeTokenFromEmail(userEmail)
 	if err != nil {
-		panic(err)
+		logger.Error.Printf("error making login token: %v\n", err)
+		httputil.WriteResponse(w, http.StatusOK, []byte(sendFailed))
+		return
 	}
 
 	msg := gomail.NewMessage()
@@ -63,7 +70,9 @@ func AuthApiLogin(w http.ResponseWriter, r *http.Request) {
 		env.Env("SUPPORT_EMAIL")))
 
 	if err := email.Send(msg); err != nil {
-		panic(err)
+		logger.Error.Printf("error sending login email: %v\n", err)
+		httputil.WriteResponse(w, http.StatusOK, []byte(sendFailed))
+		return
 	}
 
 	// response
