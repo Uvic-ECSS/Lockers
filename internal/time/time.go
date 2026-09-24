@@ -22,6 +22,10 @@ func Format(t stdtime.Time) string {
 	return t.In(loc).Format(TimeFormatLayout)
 }
 
+func FormatSortable(t stdtime.Time) string {
+	return t.In(loc).Format("2006-01-02 15:04")
+}
+
 func GetCurrentTerm() stdtime.Time {
 	now := Now()
 
