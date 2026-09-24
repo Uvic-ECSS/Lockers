@@ -16,9 +16,12 @@ CREATE INDEX IF NOT EXISTS idx_locker_registrations_user_email
 ON locker_registrations(user_email);
 
 CREATE TABLE IF NOT EXISTS locker_removals (
+    removal_id INTEGER PRIMARY KEY,
     locker_id varchar(255) NOT NULL,
     user_email varchar(255) NOT NULL,
     user_name varchar(255) NOT NULL,
-    removed_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (locker_id, removed_date)
+    removed_date datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS idx_locker_removals_locker_id
+ON locker_removals(locker_id);
